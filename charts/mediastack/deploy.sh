@@ -83,10 +83,15 @@ create_storage_dirs() {
         exit 1
     fi
     
-    # Extract paths from values.yaml
-    APPDATA_PATH=$(grep -A 5 "appdata:" "$SCRIPT_DIR/values.yaml" | grep "hostPath:" | awk '{print $2}' | tr -d '"')
-    MEDIA_PATH=$(grep -A 5 "media:" "$SCRIPT_DIR/values.yaml" | grep "hostPath:" | awk '{print $2}' | tr -d '"' | head -1)
-    DOWNLOADS_PATH=$(grep -A 5 "downloads:" "$SCRIPT_DIR/values.yaml" | grep "hostPath:" | awk '{print $2}' | tr -d '"')
+    # Extract paths from values.yaml or use defaults
+    APPDATA_PATH=$(grep -A 5 "config:" "$SCRIPT_DIR/values.yaml" | grep "basePath:" | awk '{print $2}' | tr -d '"' | head -1)
+    APPDATA_PATH=${APPDATA_PATH:-"/mediastack/appdata"}
+    
+    MEDIA_PATH=$(grep -A 5 "media:" "$SCRIPT_DIR/values.yaml" | grep "basePath:" | awk '{print $2}' | tr -d '"' | head -1)
+    MEDIA_PATH=${MEDIA_PATH:-"/mediastack/media"}
+    
+    DOWNLOADS_PATH=$(grep -A 5 "downloads:" "$SCRIPT_DIR/values.yaml" | grep "basePath:" | awk '{print $2}' | tr -d '"' | head -1)
+    DOWNLOADS_PATH=${DOWNLOADS_PATH:-"/mediastack/downloads"}
     
     echo ""
     echo "The following directories will be created:"
@@ -110,6 +115,7 @@ create_storage_dirs() {
     sudo mkdir -p "$APPDATA_PATH"
     sudo mkdir -p "$MEDIA_PATH"/{movies,tv,music,books,xxx}
     sudo mkdir -p "$DOWNLOADS_PATH"/{torrents,usenet}/{movies,tv,music,books,complete}
+    sudo mkdir -p "$DOWNLOADS_PATH"/{sonarr,radarr}
     
     # Set permissions
     PUID=$(grep "puid:" "$SCRIPT_DIR/values.yaml" | head -1 | awk '{print $2}' | tr -d '"')

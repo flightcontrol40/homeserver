@@ -1,0 +1,2274 @@
+# Source: mediastack-k8s/templates/postgresql.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgresql-secret
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: postgresql
+type: Opaque
+stringData:
+  postgres-password: "vGNoP1mabFTpDVFUQJMam6AC92H9"
+  password: "q3PVdx36FnGNRoBu65E0XqW3Ro9m"
+---
+# Source: mediastack-k8s/templates/qbittorrent-vpn-ingress.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qbittorrent-glutun-wireguard-config
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: qbittorrent-vpn
+data:
+  wg0.conf: |
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = 4ke8ZSsroiI6Sp23OBbMAU6yQmdF3xU2N8CyzQXE/Qw=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 138.199.43.65:51820
+---
+# Source: mediastack-k8s/templates/unpackerr.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unpackerr-config
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: unpackerr
+data:
+  unpackerr.conf: |
+    [global]
+    debug = false
+    quiet = false
+    interval = "2m"
+    start_delay = "1m"
+    retry_delay = "5m"
+    max_retries = 3
+    parallel = 1
+    file_mode = "0644"
+    dir_mode = "0755"
+
+    [webserver]
+    metrics = true
+    listen_addr = "0.0.0.0:5656"
+    [[sonarr]]
+    url = "http://sonarr:8989"
+    api_key = ""
+    paths = ["/data/downloads/torrents/tv"]
+    protocols = "torrent"
+    timeout = "10s"
+    delete_delay = "5m"
+    delete_orig = false
+    [[radarr]]
+    url = "http://radarr:7878"
+    api_key = ""
+    paths = ["/data/downloads/torrents/movies"]
+    protocols = "torrent"
+    timeout = "10s"
+    delete_delay = "5m"
+    delete_orig = false
+---
+# Source: mediastack-k8s/charts/qbittorrent-vpn/templates/pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qbittorrent-vpn-config
+  labels:
+    helm.sh/chart: qbittorrent-vpn-0.0.1
+    app.kubernetes.io/name: qbittorrent-vpn
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "5.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: "2Gi"
+---
+# Source: mediastack-k8s/templates/bazarr.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bazarr-config-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: bazarr
+    storage-type: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Source: mediastack-k8s/templates/flaresolverr.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: flaresolverr-config-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: flaresolverr
+    storage-type: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Source: mediastack-k8s/templates/homarr.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: homarr-config-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: homarr
+    storage-type: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Source: mediastack-k8s/templates/huntarr.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: huntarr-config-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: huntarr
+    storage-type: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Source: mediastack-k8s/templates/lidarr.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lidarr-config-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: lidarr
+    storage-type: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Source: mediastack-k8s/templates/overseerr.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: overseerr-config-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: overseerr
+    storage-type: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Source: mediastack-k8s/templates/plex.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plex-config-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: plex
+    storage-type: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Source: mediastack-k8s/templates/postgresql.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgresql-config-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: postgresql
+    storage-type: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Source: mediastack-k8s/templates/prowlarr.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prowlarr-config-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: prowlarr
+    storage-type: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Source: mediastack-k8s/templates/qbittorrent-vpn-ingress.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qbittorrent-glutun-config-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: qbittorrent-vpn
+    storage-type: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Source: mediastack-k8s/templates/radarr.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: radarr-config-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: radarr
+    storage-type: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Source: mediastack-k8s/templates/shared-storage.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: storage
+    storage-type: media
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Ti
+---
+# Source: mediastack-k8s/templates/shared-storage.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: downloads-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: storage
+    storage-type: downloads
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 200Gi
+---
+# Source: mediastack-k8s/templates/sonarr.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonarr-config-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: sonarr
+    storage-type: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Source: mediastack-k8s/templates/unpackerr.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: unpackerr-config-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: unpackerr
+    storage-type: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Source: mediastack-k8s/charts/qbittorrent-vpn/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbittorrent-vpn
+  labels:
+    helm.sh/chart: qbittorrent-vpn-0.0.1
+    app.kubernetes.io/name: qbittorrent-vpn
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "5.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: qbittorrent-vpn
+    app.kubernetes.io/instance: mediastack
+---
+# Source: mediastack-k8s/templates/bazarr.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: bazarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: bazarr
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6767
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: bazarr
+    app.kubernetes.io/instance: mediastack
+---
+# Source: mediastack-k8s/templates/flaresolverr.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: flaresolverr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: flaresolverr
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8191
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: flaresolverr
+    app.kubernetes.io/instance: mediastack
+---
+# Source: mediastack-k8s/templates/homarr.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: homarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: homarr
+spec:
+  type: ClusterIP
+  ports:
+    - port: 7575
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: homarr
+    app.kubernetes.io/instance: mediastack
+---
+# Source: mediastack-k8s/templates/huntarr.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: huntarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: huntarr
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9705
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: huntarr
+    app.kubernetes.io/instance: mediastack
+---
+# Source: mediastack-k8s/templates/lidarr.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: lidarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: lidarr
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8686
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: lidarr
+    app.kubernetes.io/instance: mediastack
+---
+# Source: mediastack-k8s/templates/overseerr.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: overseerr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: overseerr
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5055
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: overseerr
+    app.kubernetes.io/instance: mediastack
+---
+# Source: mediastack-k8s/templates/plex.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: plex
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: plex
+spec:
+  type: ClusterIP
+  ports:
+    - port: 32400
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 32469
+      targetPort: dlna-tcp
+      protocol: TCP
+      name: dlna-tcp
+  selector:
+    app.kubernetes.io/name: plex
+    app.kubernetes.io/instance: mediastack
+---
+# Source: mediastack-k8s/templates/postgresql.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: postgresql
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: postgresql
+      protocol: TCP
+      name: postgresql
+  selector:
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/instance: mediastack
+---
+# Source: mediastack-k8s/templates/prowlarr.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: prowlarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: prowlarr
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9696
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: prowlarr
+    app.kubernetes.io/instance: mediastack
+---
+# Source: mediastack-k8s/templates/radarr.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: radarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: radarr
+spec:
+  type: ClusterIP
+  ports:
+    - port: 7878
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: radarr
+    app.kubernetes.io/instance: mediastack
+---
+# Source: mediastack-k8s/templates/sonarr.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: sonarr
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8989
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: sonarr
+    app.kubernetes.io/instance: mediastack
+---
+# Source: mediastack-k8s/templates/unpackerr.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: unpackerr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: unpackerr
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5656
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: unpackerr
+    app.kubernetes.io/instance: mediastack
+---
+# Source: mediastack-k8s/charts/qbittorrent-vpn/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent-vpn
+  labels:
+    helm.sh/chart: qbittorrent-vpn-0.0.1
+    app.kubernetes.io/name: qbittorrent-vpn
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "5.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: qbittorrent-vpn
+      app.kubernetes.io/instance: mediastack
+  strategy:
+    type: Recreate  # Using Recreate instead of RollingUpdate for stateful pods
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: qbittorrent-vpn
+        app.kubernetes.io/instance: mediastack
+      annotations:
+        checksum/config: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    spec:
+      # Add hostNetwork if specified
+      
+      # Init containers if needed for directory setup
+      
+      securityContext:
+        fsGroup: 0
+        runAsNonRoot: false
+        runAsUser: 0
+      
+      containers:
+        # Gluetun VPN container
+        - name: gluetun
+          image: "qmcgaw/gluetun:v3.40.0"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            capabilities:
+              add:
+              - NET_ADMIN
+            privileged: true
+          env:
+            # VPN Provider selection - Common settings for all VPN types
+            - name: VPN_SERVICE_PROVIDER
+              value: "custom"
+            - name: VPN_TYPE
+              value: "wireguard"
+            # - name: SERVER_COUNTRIES
+            #   value: "USA"
+            - name: SERVER_HOSTNAMES_RANDOMIZED
+              value: "false"
+            
+            # OpenVPN specific configuration
+            
+            # WireGuard specific configuration
+            #
+            #
+            # - name: WIREGUARD_PRIVATE_KEY
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: wireguard-keys
+            #       key: private_key
+            #
+            
+            # # Additional WireGuard settings
+            #
+            #
+            # - name: WIREGUARD_ADDRESSES
+            #   value: "10.71.237.120/32"
+            #
+            #
+            #
+            #
+            #
+            #
+            
+            # Gluetun general settings
+            - name: BLOCK_MALICIOUS
+              value: "off"
+            - name: BLOCK_SURVEILLANCE
+              value: "off"
+            - name: DNS_ADDRESS
+              value: "1.1.1.1"
+            - name: DOT
+              value: "off"
+            - name: FIREWALL
+              value: "on"
+            - name: FIREWALL_DEBUG
+              value: "on"
+            - name: FIREWALL_INPUT_PORTS
+              value: "8080,6881"
+            - name: FIREWALL_OUTBOUND_SUBNETS
+              value: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+            - name: FIREWALL_VPN_INPUT_PORTS
+              value: "6881"
+            - name: HEALTH_SERVER_PORT
+              value: "8000"
+            - name: HEALTH_VPN_DURATION_INITIAL
+              value: "60s"
+            - name: JOURNALD
+              value: "off"
+            - name: SERVER_ALLOWLIST
+              value: "qbittorrent:8080"
+            - name: VPN_PORT_FORWARDING
+              value: "off"
+            
+            # Extra environment variables
+            - name: LOG_LEVEL
+              value: debug
+          
+          ports:
+            - name: control
+              containerPort: 8000
+              protocol: TCP
+            - name: http-proxy
+              containerPort: 8888
+              protocol: TCP
+            - name: shadowsocks-tcp
+              containerPort: 8388
+              protocol: TCP
+            - name: shadowsocks-udp
+              containerPort: 8388
+              protocol: UDP
+          
+          volumeMounts:
+            # Mount tun device for VPN
+            - name: tun
+              mountPath: /dev/net/tun
+            - name: gluetun-config
+              mountPath: /gluetun
+            - mountPath: /gluetun/wireguard
+              name: wireguard-config
+          
+          resources:
+            limits:
+              cpu: 300m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          
+        # qBittorrent container
+        - name: qbittorrent
+          image: "linuxserver/qbittorrent:5.1.0"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: bittorrent-tcp
+              containerPort: 6881
+              protocol: TCP
+            - name: bittorrent-udp
+              containerPort: 6881
+              protocol: UDP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+          
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: TZ
+              value: "America/Los_Angeles"
+            - name: WEBUI_PORT
+              value: "8080"
+          
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: downloads
+              mountPath: /downloads
+          
+          resources:
+            null
+      
+      volumes:
+        # Create /dev/net/tun as a device
+        - name: tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+        - name: config
+          persistentVolumeClaim:
+            claimName: qbittorrent-vpn-config
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: downloads-pvc
+        - name: gluetun-config
+          persistentVolumeClaim:
+            claimName: qbittorrent-glutun-config-pvc
+        - configMap:
+            name: qbittorrent-glutun-wireguard-config
+          name: wireguard-config
+---
+# Source: mediastack-k8s/templates/bazarr.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bazarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: bazarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bazarr
+      app.kubernetes.io/instance: mediastack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: bazarr
+        app.kubernetes.io/instance: mediastack
+        app.kubernetes.io/component: bazarr
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - supersussywebsite
+      containers:
+        - name: bazarr
+          image: "lscr.io/linuxserver/bazarr:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 6767
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "America/Los_Angeles"
+            - name: UMASK
+              value: "002"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /data/media
+            - name: downloads
+              mountPath: /data/downloads
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: bazarr-config-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: downloads-pvc
+---
+# Source: mediastack-k8s/templates/flaresolverr.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flaresolverr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: flaresolverr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: flaresolverr
+      app.kubernetes.io/instance: mediastack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: flaresolverr
+        app.kubernetes.io/instance: mediastack
+        app.kubernetes.io/component: flaresolverr
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - supersussywebsite
+      containers:
+        - name: flaresolverr
+          image: "ghcr.io/flaresolverr/flaresolverr:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8191
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "America/Los_Angeles"
+            - name: UMASK
+              value: "002"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /data/media
+            - name: downloads
+              mountPath: /data/downloads
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: flaresolverr-config-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: downloads-pvc
+---
+# Source: mediastack-k8s/templates/homarr.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: homarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: homarr
+      app.kubernetes.io/instance: mediastack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: homarr
+        app.kubernetes.io/instance: mediastack
+        app.kubernetes.io/component: homarr
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - supersussywebsite
+      containers:
+        - name: homarr
+          image: "ghcr.io/ajnart/homarr:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 7575
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "America/Los_Angeles"
+            - name: UMASK
+              value: "002"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /data/media
+            - name: downloads
+              mountPath: /data/downloads
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: homarr-config-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: downloads-pvc
+---
+# Source: mediastack-k8s/templates/huntarr.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: huntarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: huntarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: huntarr
+      app.kubernetes.io/instance: mediastack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: huntarr
+        app.kubernetes.io/instance: mediastack
+        app.kubernetes.io/component: huntarr
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - supersussywebsite
+      containers:
+        - name: huntarr
+          image: "ghcr.io/plexguide/huntarr:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9705
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "America/Los_Angeles"
+            - name: UMASK
+              value: "002"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /data/media
+            - name: downloads
+              mountPath: /data/downloads
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: huntarr-config-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: downloads-pvc
+---
+# Source: mediastack-k8s/templates/lidarr.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lidarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: lidarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: lidarr
+      app.kubernetes.io/instance: mediastack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: lidarr
+        app.kubernetes.io/instance: mediastack
+        app.kubernetes.io/component: lidarr
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - supersussywebsite
+      containers:
+        - name: lidarr
+          image: "lscr.io/linuxserver/lidarr:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8686
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "America/Los_Angeles"
+            - name: UMASK
+              value: "002"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /data/media
+            - name: downloads
+              mountPath: /data/downloads
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: lidarr-config-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: downloads-pvc
+---
+# Source: mediastack-k8s/templates/overseerr.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: overseerr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: overseerr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: overseerr
+      app.kubernetes.io/instance: mediastack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: overseerr
+        app.kubernetes.io/instance: mediastack
+        app.kubernetes.io/component: overseerr
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - supersussywebsite
+      containers:
+        - name: overseerr
+          image: "lscr.io/linuxserver/overseerr:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 5055
+              protocol: TCP
+          env:
+            - name: TZ
+              value: America/Los_Angeles
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: LOG_LEVEL
+              value: info
+          volumeMounts:
+            - name: config
+              mountPath: /config
+          livenessProbe:
+            httpGet:
+              path: /api/v1/status
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/v1/status
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: overseerr-config-pvc
+---
+# Source: mediastack-k8s/templates/plex.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plex
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: plex
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: plex
+      app.kubernetes.io/instance: mediastack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: plex
+        app.kubernetes.io/instance: mediastack
+        app.kubernetes.io/component: plex
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - supersussywebsite
+      containers:
+        - name: plex
+          image: "lscr.io/linuxserver/plex:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 32400
+              protocol: TCP
+            - name: dlna-tcp
+              containerPort: 32469
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "America/Los_Angeles"
+            - name: UMASK
+              value: "002"
+            - name: PLEX_CLAIM
+              value: "claim-BpqHxkLzwn3mvbsVVDFH"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /data/media
+              readOnly: true
+          resources:
+            limits:
+              cpu: 4000m
+              memory: 8Gi
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: plex-config-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+---
+# Source: mediastack-k8s/templates/prowlarr.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prowlarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: prowlarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prowlarr
+      app.kubernetes.io/instance: mediastack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: prowlarr
+        app.kubernetes.io/instance: mediastack
+        app.kubernetes.io/component: prowlarr
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - supersussywebsite
+      containers:
+        - name: prowlarr
+          image: "lscr.io/linuxserver/prowlarr:develop"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9696
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "America/Los_Angeles"
+            - name: UMASK
+              value: "002"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /data/media
+            - name: downloads
+              mountPath: /data/downloads
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: prowlarr-config-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: downloads-pvc
+---
+# Source: mediastack-k8s/templates/radarr.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: radarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: radarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: radarr
+      app.kubernetes.io/instance: mediastack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: radarr
+        app.kubernetes.io/instance: mediastack
+        app.kubernetes.io/component: radarr
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - supersussywebsite
+      containers:
+        - name: radarr
+          image: "lscr.io/linuxserver/radarr:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 7878
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "America/Los_Angeles"
+            - name: UMASK
+              value: "002"
+            - name: DOCKER_MODS
+              value: ghcr.io/themepark-dev/theme.park:radarr
+            - name: TP_THEME
+              value: dark
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /data/media
+            - name: downloads
+              mountPath: /data/downloads
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: radarr-config-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: downloads-pvc
+---
+# Source: mediastack-k8s/templates/sonarr.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: sonarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sonarr
+      app.kubernetes.io/instance: mediastack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sonarr
+        app.kubernetes.io/instance: mediastack
+        app.kubernetes.io/component: sonarr
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - supersussywebsite
+      containers:
+        - name: sonarr
+          image: "lscr.io/linuxserver/sonarr:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8989
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "America/Los_Angeles"
+            - name: UMASK
+              value: "002"
+            - name: DOCKER_MODS
+              value: ghcr.io/themepark-dev/theme.park:sonarr
+            - name: TP_THEME
+              value: dark
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /data/media
+            - name: downloads
+              mountPath: /data/downloads
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: sonarr-config-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: downloads-pvc
+---
+# Source: mediastack-k8s/templates/unpackerr.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unpackerr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: unpackerr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unpackerr
+      app.kubernetes.io/instance: mediastack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: unpackerr
+        app.kubernetes.io/instance: mediastack
+        app.kubernetes.io/component: unpackerr
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - supersussywebsite
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: unpackerr
+          image: "golift/unpackerr:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 5656
+              protocol: TCP
+          env:
+            - name: TZ
+              value: "America/Los_Angeles"
+            - name: UMASK
+              value: "002"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: downloads
+              mountPath: /data/downloads
+            - name: media
+              mountPath: /data/media
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: unpackerr-config-pvc
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: downloads-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+---
+# Source: mediastack-k8s/templates/postgresql.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: postgresql
+spec:
+  serviceName: postgresql
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/instance: mediastack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: postgresql
+        app.kubernetes.io/instance: mediastack
+        app.kubernetes.io/component: postgresql
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - supersussywebsite
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: postgresql
+          image: "postgres:16-alpine"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: postgresql
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: TZ
+              value: "America/Los_Angeles"
+            - name: POSTGRES_DB
+              value: "authentik"
+            - name: POSTGRES_USER
+              value: "mediastack"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-secret
+                  key: postgres-password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U mediastack -d authentik
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U mediastack -d authentik
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: postgresql-config-pvc
+---
+# Source: mediastack-k8s/templates/bazarr.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bazarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: bazarr
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: bazarr.supersussywebsite.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bazarr
+                port:
+                  number: 6767
+---
+# Source: mediastack-k8s/templates/homarr.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: homarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: homarr
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: homarr.supersussywebsite.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: homarr
+                port:
+                  number: 7575
+---
+# Source: mediastack-k8s/templates/huntarr.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: huntarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: huntarr
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: huntarr.supersussywebsite.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: huntarr
+                port:
+                  number: 9705
+---
+# Source: mediastack-k8s/templates/lidarr.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lidarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: lidarr
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: lidarr.supersussywebsite.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: lidarr
+                port:
+                  number: 8686
+---
+# Source: mediastack-k8s/templates/overseerr.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: overseerr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: overseerr
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: overseerr.supersussywebsite.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: overseerr
+                port:
+                  number: 5055
+---
+# Source: mediastack-k8s/templates/plex.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: plex
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: plex
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: plex.supersussywebsite.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: plex
+                port:
+                  number: 32400
+---
+# Source: mediastack-k8s/templates/prowlarr.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prowlarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: prowlarr
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: prowlarr.supersussywebsite.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prowlarr
+                port:
+                  number: 9696
+---
+# Source: mediastack-k8s/templates/qbittorrent-vpn-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: qbittorrent-vpn
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: qbittorrent-vpn
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: qbittorrent.supersussywebsite.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: qbittorrent-vpn
+                port:
+                  number: 8080
+---
+# Source: mediastack-k8s/templates/radarr.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: radarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: radarr
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: radarr.supersussywebsite.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: radarr
+                port:
+                  number: 7878
+---
+# Source: mediastack-k8s/templates/sonarr.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sonarr
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: sonarr
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: sonarr.supersussywebsite.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sonarr
+                port:
+                  number: 8989
+---
+# Source: mediastack-k8s/templates/traefik-middlewares.yaml
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: local-network-only
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  ipAllowList:
+    sourceRange:
+      - 127.0.0.1/32
+      - 192.168.64.0/22
+      - 10.0.0.0/8
+      - 172.16.0.0/12
+---
+# Source: mediastack-k8s/templates/traefik-middlewares.yaml
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: security-headers
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  headers:
+    browserXssFilter: true
+    contentTypeNosniff: true
+    forceSTSHeader: true
+    stsIncludeSubdomains: true
+    stsPreload: true
+    stsSeconds: 3.1536e+07
+    customFrameOptionsValue: SAMEORIGIN

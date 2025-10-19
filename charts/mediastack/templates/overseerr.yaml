@@ -66,9 +66,9 @@ spec:
             - name: TZ
               value: {{ .Values.global.timezone }}
             - name: PUID
-              value: {{ .Values.global.PUID | quote }}
+              value: {{ .Values.global.puid | quote }}
             - name: PGID
-              value: {{ .Values.global.PGID | quote }}
+              value: {{ .Values.global.pgid | quote }}
             - name: LOG_LEVEL
               value: {{ .Values.overseerr.logLevel | default "info" }}
             {{- range .Values.overseerr.env }}
@@ -77,7 +77,7 @@ spec:
             {{- end }}
           volumeMounts:
             - name: config
-              mountPath: /app/config
+              mountPath: /config
           livenessProbe:
             httpGet:
               path: /api/v1/status

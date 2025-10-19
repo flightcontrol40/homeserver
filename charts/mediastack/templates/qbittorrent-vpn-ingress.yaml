@@ -1,0 +1,150 @@
+{{- include "mediastack.ingress" (dict "service" "qbittorrent-vpn" "context" $) }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qbittorrent-glutun-config-pvc
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: qbittorrent-vpn
+    storage-type: config
+spec:
+  accessModes:
+    - {{ .Values.storage.config.accessMode }}
+  storageClassName: {{ .Values.storage.config.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.config.size }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qbittorrent-glutun-wireguard-config
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: qbittorrent-vpn
+data:
+  us-sea-wg-001.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = bZQF7VRDRK/JUJ8L6EFzF/zRw2tsqMRk6FesGtTgsC0=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 138.199.43.91:51820
+  us-sea-wg-002.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = Xt80FGN9eLy1vX3F29huj6oW2MnQt7ne3DMBpo525Qw=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 138.199.43.78:51820
+  us-sea-wg-003.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = 4ke8ZSsroiI6Sp23OBbMAU6yQmdF3xU2N8CyzQXE/Qw=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 138.199.43.65:51820
+  us-sea-wg-401.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = wRvkGNE3N2UklxKajU06gbBJ3Bg7KmhZsU7a5HIFBw8=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.80.2:51820
+  us-sea-wg-402.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = NBnpCxDrc0tdX91KUm5cEmQv7BSMOZqd7dS/d7piQl0=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.80.127:51820
+  us-sea-wg-403.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = cJ8317JqMtNDvxvd/8z29lWurK/3sb5nFZuOY5mw3ys=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.81.2:51820
+  us-sea-wg-404.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = G6+A375GVmuFCAtvwgx3SWCWhrMvdQ+cboXQ8zp2ang=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.81.127:51820
+  us-sea-wg-405.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = X+efE4ntYuAEHBHU32SBMq/U0lAFEKeX5/nl3CKtrVM=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.82.2:51820
+  us-sea-wg-406.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = kT695K8pTGd+I6Q4a4URU2AdXN2VAtHyi7kNSRjUEiw=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.82.127:51820
+  us-sea-wg-407.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = HrhtkMqLmKtpAHiUIw7uLHwt48mDlhyLOt4+1kpNj3Y=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.83.2:51820
+  us-sea-wg-408.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = tfhYXF12+7tB6bEOhqZ7eMODDv08fDMnQSBTmlau9VI=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.83.127:51820

@@ -179,6 +179,10 @@ spec:
             capabilities:
               add:
                 - NET_ADMIN
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/sh", "-c", "(ip rule del table 51820; ip -6 rule del table 51820) || true"]
           ports:
             - name: http
               containerPort: {{ .Values.transmission.service.port }}
@@ -252,19 +256,23 @@ spec:
             - name: VPN_PORT_FORWARDING
               value: {{ .Values.transmission.vpn.portForwarding.enabled | ternary "on" "off" | quote }}
             - name: HEALTH_VPN_DURATION_INITIAL
-              value: "30s"
+              value: "60s"
+            - name: HEALTH_TARGET_ADDRESS
+              value: "1.1.1.1:443"
             - name: HTTP_CONTROL_SERVER_ADDRESS
               value: ":8000"
             - name: DOT
-              value: "off"
+              value: "on"
+            - name: DOT_PROVIDERS
+              value: "cloudflare"
+            - name: DOT_VERBOSITY
+              value: "1"
+            - name: DOT_VERBOSITY_DETAILS
+              value: "0"
             - name: BLOCK_MALICIOUS
               value: "off"
             - name: BLOCK_SURVEILLANCE
               value: "off"
-            # Use Mullvad DNS for reliable resolution through VPN
-            - name: DNS_ADDRESS
-              value: "10.64.0.1"
-            # Enable HTTP proxy for Transmission to use
             - name: HTTPPROXY
               value: "on"
             - name: HTTPPROXY_LISTENING_ADDRESS
@@ -411,32 +419,28 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
           volumeMounts:
-            - name: config
+            - name: transmission-config
               mountPath: /config
             - name: downloads
               mountPath: /downloads
             - name: watch
               mountPath: /watch
-            - name: transmission-config
-              mountPath: /config/settings.json
-              subPath: settings.json
           {{- with .Values.transmission.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
       volumes:
-        - name: config
+        - name: transmission-config
           persistentVolumeClaim:
             claimName: transmission-config-pvc
         - name: downloads
           persistentVolumeClaim:
             claimName: downloads-pvc
         - name: watch
-          persistentVolumeClaim:
-            claimName: downloads-pvc
-        - name: transmission-config
-          configMap:
-            name: transmission-config
+          emptyDir: {}
+        # - name: transmission-config
+        #   configMap:
+        #     name: transmission-config
         {{- if .Values.transmission.vpn.enabled }}
         - name: gluetun-data
           emptyDir: {}

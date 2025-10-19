@@ -4,20 +4,23 @@
 global:
   # YOUR DOMAIN NAME - Change this!
   domain: "supersussywebsite.com"
-  
+
   namespace: "mediastack"
-  
+
   # Your timezone - Change to your location
   # Find yours at: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
   timezone: "America/Los_Angeles"
-  
+
   # User and Group IDs - Run `id -u` and `id -g` to find yours
   puid: "1000"
   pgid: "1000"
   umask: "002"
-  
+
   imagePullPolicy: IfNotPresent
-  
+
+  qbittorrent:
+    enabled: true
+
   traefik:
     entrypoint: "web"
     middlewares: []
@@ -25,21 +28,23 @@ global:
     tls:
       enabled: false
 
+
+
 storage:
   # Configuration for Rancher local-path-provisioner
   # Install: kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.24/deploy/local-path-storage.yaml
-  
+
   # Per-pod config storage (not shared between pods)
   # Each service gets its own PVC for configuration
   config:
     enabled: true
-    storageClass: "local-path"  # Default local-path-provisioner StorageClass
-    size: "5Gi"  # Size for each service's config volume
-    accessMode: "ReadWriteOnce"  # Each pod has its own config
+    storageClass: "local-path" # Default local-path-provisioner StorageClass
+    size: "5Gi" # Size for each service's config volume
+    accessMode: "ReadWriteOnce" # Each pod has its own config
     # Optional: Override the base path where local-path-provisioner stores data
     # Default is /opt/local-path-provisioner
     # basePath: "/mediastack/appdata"
-  
+
   # Shared media storage (accessible by all pods simultaneously)
   # Used for: media library, completed downloads
   media:
@@ -52,7 +57,7 @@ storage:
     # Optional: Use a specific path for media storage
     # You can create a custom StorageClass that uses a specific path
     # basePath: "/mediastack/media"
-  
+
   # Shared downloads storage (accessible by all pods simultaneously)
   # Used for: active downloads, incomplete files
   downloads:
@@ -93,7 +98,7 @@ postgresql:
 # MEDIA SERVERS - Enable the one(s) you want
 
 jellyfin:
-  enabled: false  # Open-source media server
+  enabled: false # Open-source media server
   image:
     repository: lscr.io/linuxserver/jellyfin
     tag: "latest"
@@ -111,7 +116,7 @@ jellyfin:
       cpu: "2000m"
 
 plex:
-  enabled: true  # Enable if you want Plex (can run both)
+  enabled: true # Enable if you want Plex (can run both)
   image:
     repository: lscr.io/linuxserver/plex
     tag: "latest"
@@ -121,7 +126,7 @@ plex:
     enabled: true
     host: "plex"
   # Get your claim token from: https://www.plex.tv/claim/
-  claim: "claim-LYxrXcRL4jNQYjuXQHzy"
+  claim: "claim-BpqHxkLzwn3mvbsVVDFH"
   resources:
     requests:
       memory: "2Gi"
@@ -133,7 +138,7 @@ plex:
 # *ARR APPLICATIONS - Media library managers
 
 prowlarr:
-  enabled: true  # Indexer manager (configure this first!)
+  enabled: true # Indexer manager (configure this first!)
   image:
     repository: lscr.io/linuxserver/prowlarr
     tag: "develop"
@@ -151,7 +156,7 @@ prowlarr:
       cpu: "500m"
 
 radarr:
-  enabled: true  # Movies
+  enabled: true # Movies
   image:
     repository: lscr.io/linuxserver/radarr
     tag: "latest"
@@ -174,7 +179,7 @@ radarr:
       cpu: "1000m"
 
 sonarr:
-  enabled: true  # TV Shows
+  enabled: true # TV Shows
   image:
     repository: lscr.io/linuxserver/sonarr
     tag: "latest"
@@ -197,7 +202,7 @@ sonarr:
       cpu: "1000m"
 
 lidarr:
-  enabled: true  # Music
+  enabled: true # Music
   image:
     repository: lscr.io/linuxserver/lidarr
     tag: "latest"
@@ -215,7 +220,7 @@ lidarr:
       cpu: "500m"
 
 readarr:
-  enabled: false  # Books/Audiobooks
+  enabled: false # Books/Audiobooks
   image:
     repository: lscr.io/linuxserver/readarr
     tag: "develop"
@@ -233,7 +238,7 @@ readarr:
       cpu: "500m"
 
 whisparr:
-  enabled: false  # Adult content
+  enabled: false # Adult content
   image:
     repository: hotio/whisparr
     tag: "nightly"
@@ -251,7 +256,7 @@ whisparr:
       cpu: "500m"
 
 bazarr:
-  enabled: true  # Subtitles
+  enabled: true # Subtitles
   image:
     repository: lscr.io/linuxserver/bazarr
     tag: "latest"
@@ -271,7 +276,7 @@ bazarr:
 # DOWNLOAD CLIENTS
 
 qbittorrent:
-  enabled: false  # Torrent client
+  enabled: false # Torrent client
   image:
     repository: lscr.io/linuxserver/qbittorrent
     tag: "latest"
@@ -284,29 +289,29 @@ qbittorrent:
   env:
     - name: WEBUI_PORT
       value: "8080"
-  
+
   # VPN Configuration for Mullvad
   vpn:
-    enabled: true  # ENABLE THIS to route torrents through VPN
+    enabled: true # ENABLE THIS to route torrents through VPN
     provider: "mullvad"
-    
+
     # Optional: Specific server selection
-    serverCountries: ""  # e.g., "Sweden" or "Netherlands,Germany"
-    serverCities: ""     # e.g., "Stockholm" for specific city
-    
+    serverCountries: "" # e.g., "Sweden" or "Netherlands,Germany"
+    serverCities: "" # e.g., "Stockholm" for specific city
+
     # Allow access from your local network
     allowedSubnets: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
-    
+
     # WireGuard Configuration
     # Get these from your Mullvad account: https://mullvad.net/en/account/wireguard-config
     wireguard:
       # Step 1: Generate a WireGuard key in your Mullvad account
       # Step 2: Copy the private key here
       privateKey: "6F1W+lhViLfYqYWmptzZy/y0wqUiJjiMqtAeGfGh0XQ="
-      
+
       # Step 3: Select a Mullvad server and copy its public key
       publicKey: "bZQF7VRDRK/JUJ8L6EFzF/zRw2tsqMRk6FesGtTgsC0="
-      
+
       # Step 4: Copy your assigned IP addresses from Mullvad
       # NOTE: If you have IPv6 connectivity issues, remove the IPv6 address
       # (the one starting with fc00:) and only keep the IPv4 address
@@ -314,15 +319,14 @@ qbittorrent:
       addresses: "10.71.237.120/32"
       # Example with both: "10.66.123.45/32,fc00:bbbb:bbbb:bb01::4:abcd/128"
       # Example IPv4 only: "10.66.123.45/32"
-      
+
       # Optional: Preshared key (only if Mullvad provides one)
       presharedKey: ""
-      
-      # Step 5: Copy the server endpoint details
+
       endpoint:
-        ip: "45.134.140.130"  # Mullvad server IP
-        port: "51820"  # Usually 51820 for Mullvad
-  
+        ip: "45.134.140.130" # Mullvad server IP
+        port: "51820" # Usually 51820 for Mullvad
+
   resources:
     requests:
       memory: "512Mi"
@@ -332,7 +336,7 @@ qbittorrent:
       cpu: "1000m"
 
 transmission:
-  enabled: true  # Torrent client (alternative to qbittorrent)
+  enabled: false # Torrent client (alternative to qbittorrent)
   image:
     repository: lscr.io/linuxserver/transmission
     tag: "latest"
@@ -342,13 +346,13 @@ transmission:
   ingress:
     enabled: true
     host: "transmission"
-  
+
   # RPC Password Configuration (optional)
   rpcPassword:
     enabled: true
-    value: "password"  # CHANGE THIS!
-  rpcUsername: ""  # Optional: set RPC username
-  
+    value: "password" # CHANGE THIS!
+  rpcUsername: "" # Optional: set RPC username
+
   # Transmission Configuration
   # These settings mirror the settings.json configuration
   config:
@@ -360,32 +364,32 @@ transmission:
     altSpeedTimeEnabled: false
     altSpeedTimeEnd: 1020
     altSpeedUp: 50
-    speedLimitDown: 10024  # KB/s
+    speedLimitDown: 10024 # KB/s
     speedLimitDownEnabled: true
-    speedLimitUp: 5012  # KB/s
+    speedLimitUp: 5012 # KB/s
     speedLimitUpEnabled: true
-    
+
     # Security settings
     antiBruteForceEnabled: false
     antiBruteForceThreshold: 100
     blocklistEnabled: true
     blocklistUrl: "https://github.com/Naunter/BT_BlockLists/raw/master/bt_blocklists.gz"
-    
+
     # Connection settings
     dhtEnabled: true
     lpdEnabled: false
     pexEnabled: false
     tcpEnabled: true
     utpEnabled: false
-    portForwardingEnabled: true
-    
+    portForwardingEnabled: false
+
     # Download settings
     downloadQueueEnabled: true
     downloadQueueSize: 5
     incompleteDirEnabled: true
     startAddedTorrents: true
     watchDirEnabled: true
-    
+
     # Seeding settings
     idleSeedingLimit: 30
     idleSeedingLimitEnabled: false
@@ -393,10 +397,10 @@ transmission:
     ratioLimitEnabled: false
     seedQueueEnabled: false
     seedQueueSize: 10
-    
+
     # Performance settings
     cacheSizeMb: 4
-    encryption: 1  # 0=prefer unencrypted, 1=prefer encrypted, 2=require encrypted
+    encryption: 1 # 0=prefer unencrypted, 1=prefer encrypted, 2=require encrypted
     peerLimitGlobal: 300
     peerLimitPerTorrent: 50
     uploadSlotsPerTorrent: 14
@@ -404,41 +408,41 @@ transmission:
     prefetchEnabled: true
     queueStalledEnabled: true
     queueStalledMinutes: 30
-    
+
     # File handling
     renamePartialFiles: true
     trashOriginalTorrentFiles: false
     torrentAddedVerifyMode: "fast"
     scrapePausedTorrentsEnabled: true
-    
+
     # Other settings
     messageLevel: 2
     peerIdTtlHours: 6
-  
+
   env: []
-  
+
   # VPN Configuration for Mullvad
   vpn:
-    enabled: true  # ENABLE THIS to route torrents through VPN
+    enabled: true # ENABLE THIS to route torrents through VPN
     provider: "mullvad"
-    
+
     # Optional: Specific server selection
-    serverCountries: ""  # e.g., "Sweden" or "Netherlands,Germany"
-    serverCities: ""     # e.g., "Stockholm" for specific city
-    
+    serverCountries: "" # e.g., "Sweden" or "Netherlands,Germany"
+    serverCities: "" # e.g., "Stockholm" for specific city
+
     # Allow access from your local network
     allowedSubnets: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
-    
+
     # WireGuard Configuration
     # Get these from your Mullvad account: https://mullvad.net/en/account/wireguard-config
     wireguard:
       # Step 1: Generate a WireGuard key in your Mullvad account
       # Step 2: Copy the private key here
       privateKey: "6F1W+lhViLfYqYWmptzZy/y0wqUiJjiMqtAeGfGh0XQ="
-      
+
       # Step 3: Select a Mullvad server and copy its public key
       publicKey: "bZQF7VRDRK/JUJ8L6EFzF/zRw2tsqMRk6FesGtTgsC0="
-  
+
       # Step 4: Copy your assigned IP addresses from Mullvad
       # NOTE: If you have IPv6 connectivity issues, remove the IPv6 address
       # (the one starting with fc00:) and only keep the IPv4 address
@@ -446,23 +450,23 @@ transmission:
       addresses: "10.71.237.120/32"
       # Example with both: "10.66.123.45/32,fc00:bbbb:bbbb:bb01::4:abcd/128"
       # Example IPv4 only: "10.66.123.45/32"
-      
+
       # Optional: Preshared key (only if Mullvad provides one)
       presharedKey: ""
-      
+
       # Step 5: Copy the server endpoint details
       endpoint:
-        ip: "45.134.140.130"  # Mullvad server IP
-        port: "51820"  # Usually 51820 for Mullvad
-    
+        ip: "45.134.140.130" # Mullvad server IP
+        port: "51820" # Usually 51820 for Mullvad
+
     # Port Forwarding Configuration
     # Automatically updates Transmission's peer port when using VPN providers
     # that support dynamic port forwarding (like ProtonVPN)
     portForwarding:
-      enabled: false  # Enable if your VPN provider supports port forwarding
-      errorRetrySeconds: 60    # How long to wait after an error before retrying
-      updateCheckSeconds: 120  # How often to check for port changes
-  
+      enabled: false # Enable if your VPN provider supports port forwarding
+      errorRetrySeconds: 60 # How long to wait after an error before retrying
+      updateCheckSeconds: 120 # How often to check for port changes
+
   resources:
     requests:
       memory: "512Mi"
@@ -472,7 +476,7 @@ transmission:
       cpu: "1000m"
 
 sabnzbd:
-  enabled: false  # Usenet client
+  enabled: false # Usenet client
   image:
     repository: lscr.io/linuxserver/sabnzbd
     tag: "latest"
@@ -492,14 +496,14 @@ sabnzbd:
 # SUPPORTING SERVICES
 
 flaresolverr:
-  enabled: true  # Cloudflare bypass (needed for some indexers)
+  enabled: true # Cloudflare bypass (needed for some indexers)
   image:
     repository: ghcr.io/flaresolverr/flaresolverr
     tag: "latest"
   service:
     port: 8191
   ingress:
-    enabled: false  # Internal service only
+    enabled: false # Internal service only
   resources:
     requests:
       memory: "256Mi"
@@ -509,7 +513,7 @@ flaresolverr:
       cpu: "500m"
 
 jellyseerr:
-  enabled: false  # Media request management
+  enabled: false # Media request management
   image:
     repository: fallenbagel/jellyseerr
     tag: "latest"
@@ -529,7 +533,7 @@ jellyseerr:
 # DASHBOARDS - Choose one
 
 homarr:
-  enabled: true  # Modern dashboard
+  enabled: true # Modern dashboard
   image:
     repository: ghcr.io/ajnart/homarr
     tag: "latest"
@@ -547,7 +551,7 @@ homarr:
       cpu: "500m"
 
 heimdall:
-  enabled: false  # Classic dashboard
+  enabled: false # Classic dashboard
   image:
     repository: lscr.io/linuxserver/heimdall
     tag: "latest"
@@ -565,7 +569,7 @@ heimdall:
       cpu: "200m"
 
 homepage:
-  enabled: false  # Alternative dashboard
+  enabled: false # Alternative dashboard
   image:
     repository: ghcr.io/gethomepage/homepage
     tag: "latest"
@@ -585,7 +589,7 @@ homepage:
 # UTILITIES
 
 huntarr:
-  enabled: true  # Missing content finder
+  enabled: true # Missing content finder
   image:
     repository: ghcr.io/plexguide/huntarr
     tag: "latest"
@@ -603,7 +607,7 @@ huntarr:
       cpu: "200m"
 
 unpackerr:
-  enabled: true  # Archive extraction
+  enabled: true # Archive extraction
   image:
     repository: golift/unpackerr
     tag: "latest"
@@ -612,12 +616,12 @@ unpackerr:
   config:
     sonarr:
       - url: "http://sonarr:8989"
-        apiKey: ""  # Add after deploying Sonarr
+        apiKey: "" # Add after deploying Sonarr
         paths:
           - "/data/downloads/torrents/tv"
     radarr:
       - url: "http://radarr:7878"
-        apiKey: ""  # Add after deploying Radarr
+        apiKey: "" # Add after deploying Radarr
         paths:
           - "/data/downloads/torrents/movies"
   resources:
@@ -629,7 +633,7 @@ unpackerr:
       cpu: "200m"
 
 tdarr:
-  enabled: false  # Transcoding automation (resource intensive)
+  enabled: false # Transcoding automation (resource intensive)
   server:
     image:
       repository: ghcr.io/haveagitgat/tdarr
@@ -662,7 +666,7 @@ tdarr:
         cpu: "4000m"
 
 guacamole:
-  enabled: false  # Remote desktop gateway
+  enabled: false # Remote desktop gateway
   guacamole:
     image:
       repository: guacamole/guacamole
@@ -701,14 +705,14 @@ guacamole:
 crowdsec:
   enabled: false
   image:
-    repository:  ghcr.io/crowdsecurity/crowdsec
+    repository: ghcr.io/crowdsecurity/crowdsec
     tag: "latest"
   service:
     port: 8080
   ingress:
-    enabled: false  # Do not expose publicly for security
+    enabled: false # Do not expose publicly for security
   logs:
-    enabled: true  # Mount logs from other services
+    enabled: true # Mount logs from other services
   resources:
     requests:
       memory: "256Mi"
@@ -739,14 +743,13 @@ overseerr:
     limits:
       memory: "1Gi"
       cpu: "500m"
-  
+
   persistence:
     config:
       size: "1Gi"
     subPath: true
 
-
-# traefik 
+# traefik
 traefik:
   enabled: true
 
@@ -757,7 +760,7 @@ traefik:
       - "192.168.64.0/22"
       - "10.0.0.0/8"
       - "172.16.0.0/12"
-  
+
   # Security headers middleware
   securityHeaders:
     enabled: true
@@ -768,3 +771,217 @@ traefik:
     stsPreload: true
     stsSeconds: 31536000
     customFrameOptionsValue: "SAMEORIGIN"
+
+
+qbittorrent-vpn:
+
+  ingress:
+    enabled: true
+    host: "qbittorrent"
+
+  persistence:
+    config:
+      size: "1Gi"
+    subPath: true
+
+  enabled: true
+
+  gluetun:
+    enabled: true
+    image:
+      repository: qmcgaw/gluetun
+      tag: v3.40.0
+      pullPolicy: IfNotPresent
+    
+    securityContext:
+      privileged: true
+      capabilities:
+        add:
+          - NET_ADMIN
+    
+    # VPN provider configuration
+    vpn:
+      provider: "custom"
+      type: "wireguard"
+      
+      # Server selection (comma-separated lists)
+      serverCountries: "USA"
+      serverCities: ""
+      serverNames: ""
+      randomize: "false"
+      
+      # OpenVPN specific settings (not used for WireGuard)
+      openvpn:
+        OPENVPN_PROTOCOL: "udp"
+      
+      # WireGuard specific settings
+      wireguard:
+        privateKey: ""  # Empty because using existing secret
+        privateKeyExistingSecret: "wireguard-keys"
+        privateKeyExistingSecretKey: "private_key"
+        addresses: "10.71.237.120/32"
+        endpointIP: ""  # Let Gluetun auto-select
+        endpointPort: ""  # Let Gluetun use default
+        publicKey: ""   # Let Gluetun auto-select
+    
+    # VPN credentials
+    credentials:
+      create: false  # Using existing secret
+      username: ""
+      password: ""
+      existingSecret: "wireguard-keys"
+      usernameKey: "username"
+      passwordKey: "password"
+    
+    # General Gluetun settings as environment variables
+    settings:
+      # Firewall settings
+      FIREWALL: "on"
+      FIREWALL_OUTBOUND_SUBNETS: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+      FIREWALL_INPUT_PORTS: "8080,6881"  # Allow qBittorrent WebUI and BitTorrent
+      FIREWALL_VPN_INPUT_PORTS: "6881"   # Allow BitTorrent through VPN
+      
+      # # DNS settings - Use simple DNS for better compatibility
+      # DOT: "off"  # Disable DNS over TLS - causes timeouts
+      # DNS_ADDRESS: "1.1.1.1"  # Use Cloudflare DNS directly
+      # BLOCK_MALICIOUS: "off"  # Disable malicious blocking to avoid DNS delays
+      # BLOCK_SURVEILLANCE: "off"  # Disable surveillance blocking to avoid DNS delays
+      
+      # Health check
+      HEALTH_SERVER_PORT: "8000"
+      HEALTH_VPN_DURATION_INITIAL: "60s"  # Give VPN more time to establish
+      
+      # Optional port forwarding (Mullvad doesn't support this)
+      VPN_PORT_FORWARDING: "off"
+      
+    
+    # Extra environment variables
+    extraEnv: 
+      - name: LOG_LEVEL
+        value: "debug"
+    
+    # Extra ports to expose
+    extraPorts: []
+    
+    # Resources for Gluetun
+    resources:
+      limits:
+        cpu: 300m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    
+    # Persistence for Gluetun
+    persistence:
+      enabled: true
+      existingClaim: "qbittorrent-glutun-config-pvc"
+      storageClass: ""
+      accessMode: ReadWriteOnce
+      size: 100Mi
+      
+    extraVolumeMounts: 
+      - name: wireguard-config
+        mountPath: /gluetun/wireguard
+        
+  extraVolumes: 
+    - name: wireguard-config
+      configMap:
+        name: qbittorrent-glutun-wireguard-config
+
+## qBittorrent Image settings
+  qbittorrent:
+    image:
+      repository: linuxserver/qbittorrent
+      tag: 5.1.0
+      pullPolicy: IfNotPresent
+    
+    securityContext: {}
+
+    # Open port for BitTorrent traffic
+    bittorrentPort: 6881
+
+    env:
+      - name: PUID
+        value: "0"
+      - name: PGID
+        value: "0"
+      - name: TZ
+        value: "America/Los_Angeles"  # Use your configured timezone
+      - name: WEBUI_PORT
+        value: "8080"
+    
+    extraEnv: []
+    
+    service:
+      port: 8080
+    
+    #resources:
+    #  limits:
+    #    cpu: 1000m
+    #    memory: 2Gi
+    #  requests:
+    #    cpu: 200m
+    #    memory: 512Mi
+
+    persistence:
+      config:
+        enabled: true
+        existingClaim: ""
+        storageClass: ""
+        accessMode: ReadWriteOnce
+        size: 2Gi
+        mountPath: /config
+      
+      downloads:
+        enabled: true
+        existingClaim: "downloads-pvc"
+        storageClass: ""
+        accessMode: ReadWriteOnce
+        size: 2Gi
+        mountPath: /downloads
+
+    extraVolumeMounts: []
+    extraVolumes: []
+
+
+realdebrid:
+  enabled: true # Real-Debrid integration service
+  image:
+    repository: ghcr.io/rogerfar/rdtclient
+    tag: "latest"
+  service:
+    port: 6500
+  ingress:
+    enabled: true
+    host: "realdebrid"
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+aria:
+  enabled: true # aria2 with Real-Debrid support
+  image:
+    repository: p3terx/aria2-pro
+    tag: "latest"
+  service:
+    port: 6800
+  env:
+    - name: RPC_PORT
+      value: "6800"
+    - name: RPC_SECRET
+      value: "X1d6TnpVwd6L25byryW8CvgV8c" # CHANGE THIS!
+  ingress:
+    enabled: true
+    host: "aria"
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"

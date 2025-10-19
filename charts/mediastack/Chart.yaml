@@ -17,3 +17,8 @@ keywords:
   - sonarr
   - arr
 
+dependencies:
+  - name: qbittorrent-vpn
+    version: 0.0.1
+    repository: file://./charts/qbittorrent-vpn
+    condition: qbittorrent-vpn.enabled

@@ -1,0 +1,102 @@
+{{- include "mediastack.service" (dict "service" "realdebrid" "context" $) }}
+{{- include "mediastack.ingress" (dict "service" "realdebrid" "context" $) }}
+---
+{{- $serviceName := "realdebrid" -}}
+{{- $values := index $.Values $serviceName -}}
+{{- if $values.enabled }}
+{{- if $.Values.storage.config.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $serviceName }}-config-pvc
+  namespace: {{ $.Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $serviceName }}
+    storage-type: config
+spec:
+  accessModes:
+    - {{ $.Values.storage.config.accessMode }}
+  storageClassName: {{ $.Values.storage.config.storageClass }}
+  resources:
+    requests:
+      storage: {{ $.Values.storage.config.size }}
+{{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $serviceName }}
+  namespace: {{ $.Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $serviceName }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $serviceName }}
+      app.kubernetes.io/instance: {{ $.Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $serviceName }}
+        app.kubernetes.io/instance: {{ $.Release.Name }}
+        app.kubernetes.io/component: {{ $serviceName }}
+    spec:
+      {{- if $.Values.nodeAffinity }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - {{ $.Values.nodeAffinity.hostname }}
+      {{- end }}
+      containers:
+        - name: {{ $serviceName }}
+          image: "{{ $values.image.repository }}:{{ $values.image.tag }}"
+          imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ $values.service.port }}
+              protocol: TCP
+            - name: aria
+              containerPort: {{ .Values.aria.service.port }}
+              protocol: TCP
+          env:
+            {{- include "mediastack.commonEnv" $ | nindent 12 }}
+            {{- with $values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /data/db
+            {{- if $.Values.storage.downloads.enabled }}
+            - name: downloads
+              mountPath: /downloads
+            {{- end }}
+          {{- with $values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: {{ $serviceName }}-config-pvc
+        {{- if $.Values.storage.media.enabled }}
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+        {{- end }}
+        {{- if $.Values.storage.downloads.enabled }}
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: downloads-pvc
+        {{- end }}
+{{- end }}
