@@ -120,9 +120,9 @@ traefik:
 
   # -- Create a default IngressClass for Traefik
   ingressClass:  # @schema additionalProperties: false
-    enabled: true
+    enabled: false
     isDefaultClass: true
-    name: ""
+    name: "traefik"
 
   core:  # @schema additionalProperties: false
     # -- Can be used to use globally v2 router syntax. Deprecated since v3.4 /!\.
