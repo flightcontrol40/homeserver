@@ -1,0 +1,859 @@
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  namespace: mediastack
+
+
+storage:
+  appdata:
+    size: 50Gi
+    accessMode: "ReadWriteOnce"
+    mountPath: /mediastack/appdata
+
+  media:
+    size: 1T
+    accessMode: "ReadWriteOnce"
+    mountPath: /mediastack/media
+
+bazarr:
+  nameOverride: ""
+  fullnameOverride: ""
+  #
+  # Secrets to create
+  #
+  secrets:
+    - name: "apiKey"
+      value: "77954ec318ebce6755212de4d24280d0"
+    - name: 'sonarrApiKey'
+      value: 'b2b9a1cc4008e6f51a9ba3380c332e21'
+    - name: 'radarrApiKey'
+      value: '27fab5735782916dca45411830acf9fa'
+
+  #
+  # Application Config
+  #
+  application:
+    # Main application web UI port
+    port: 6767
+    # Access url base
+    urlBase: "bazarr"
+    # ConfigMap for core application settings
+    config:
+      # Filename of configuration
+      filename: "config.yaml"
+      # Configuration file contents
+      contents: |
+        ---
+        # We can set up a lot of extra settings, and providers, directly here
+        # To get an example of an exhaustive list of of possible values you could add here see:
+        #   ./config.example.yaml
+        analytics:
+          enabled: false
+        auth:
+          apiKey: '$apiKey'
+        general:
+          adaptive_searching: true
+          auto_update: false
+          base_url: '/bazarr'
+          port: 6767
+          use_radarr: false
+          use_sonarr: false
+          # radarr:
+          #   apiKey: '$radarrApiKey'
+          #   base_url: '/radarr'
+          #   ip: 'radarr.media-servarr.svc.cluster.local'
+          #   port: 7878
+          # sonarr:
+          #   apiKey: '$sonarrApiKey'
+          #   base_url: '/sonarr'
+          #   ip: 'sonarr.media-servarr.svc.cluster.local'
+          #   port: 8989
+      # Secrets to inject the config they must be defined as $secret
+      secrets:
+        - "apiKey"
+        # - 'sonarrApiKey'
+        # - 'radarrApiKey'
+      # Path the file will be mounted to in the config
+      mountPath: "/config/config/config.yaml"
+  #
+  # Resource - DEPLOYMENT
+  # This is to set up and define the application deployment
+  #
+  deployment:
+    container:
+      image:
+        repository: "lscr.io/linuxserver/bazarr"
+      env:
+        - name: "PGID"
+          value: "1000"
+        - name: "PUID"
+          value: "1000"
+      livenessProbe:
+        httpGet:
+          path: "/bazarr/system/status"
+          port: "http"
+        initialDelaySeconds: 30
+      readinessProbe:
+        httpGet:
+          path: "/bazarr/system/status"
+          port: "http"
+        initialDelaySeconds: 15
+      # Additional volumeMounts on the output Deployment definition.
+      volumeMounts:
+        - name: "config"
+          mountPath: "/config"
+    volumes:
+      config:
+        persistentVolumeClaim:
+          claimName: "bazarr-config"
+  persistentVolumeClaims:
+    bazarr-config:
+      accessMode: "ReadWriteOnce"
+      requestStorage: "1Gi"
+      selector: 
+        matchLabels:
+          app.kubernetes.io/component: appdata-pv
+  ingress:
+    enabled: false
+  metrics:
+    enabled: false
+    app: "bazarr"
+    port:
+      number: 9700
+flaresolverr:
+  nameOverride: ""
+  fullnameOverride: ""
+  #
+  # Application Config
+  #
+  application:
+    # main application web ui port
+    port: 8191
+    # access url base
+    urlBase: "flaresolverr"
+    # Config is managed with environment variables in deployment.env
+    # @see https://github.com/FlareSolverr/FlareSolverr#environment-variables
+  #
+  # Resource - DEPLOYMENT
+  # This is to set up and define the application deployment
+  #
+  deployment:
+    container:
+      image:
+        repository: "ghcr.io/flaresolverr/flaresolverr"
+      # @see https://github.com/FlareSolverr/FlareSolverr?tab=readme-ov-file#environment-variables
+      env:
+      # - name: 'PROMETHEUS_ENABLED'
+      #   value: '1'
+      # - name: 'PROMETHEUS_PORT'
+      #   value: '9702'
+  service:
+    type: "ClusterIP"
+    ports:
+      - targetPort: "http" # The main port name is 'http', even though it isn't
+        protocol: "TCP"
+        name: "http"
+  ingress:
+    enabled: false
+homarr:
+  nameOverride: ""
+  fullnameOverride: ""
+  #
+  # Application Config
+  #
+  application:
+    # Main application web UI port
+    port: 7575
+  #
+  # Resource - DEPLOYMENT
+  # This is to set up and define the application deployment
+  #
+  deployment:
+    container:
+      image:
+        repository: "ghcr.io/homarr-labs/homarr"
+      # Additional volumeMounts on the output Deployment definition.
+      volumeMounts:
+        - name: "app-data-configs"
+          mountPath: "/app/data/configs"
+          subPath: "configs"
+        - name: "data"
+          mountPath: "/data"
+        - name: "app-data-configs"
+          mountPath: "/app/data/icons"
+          subPath: "icons"
+    volumes:
+      # Dashboard files
+      app-data-configs:
+        persistentVolumeClaim:
+          claimName: "homarr-config"
+      # DB files
+      data:
+        persistentVolumeClaim:
+          claimName: "homarr-data"
+  persistentVolumeClaims:
+    homarr-config:
+      accessMode: "ReadWriteOnce"
+      requestStorage: "1Gi"
+      selector: 
+        matchLabels:
+          app.kubernetes.io/component: appdata-pv
+    homarr-data:
+      accessMode: "ReadWriteOnce"
+      requestStorage: "1Gi"
+      selector: 
+        matchLabels:
+          app.kubernetes.io/component: media-pv
+  ingress:
+    enabled: false
+    path: "/"
+huntarr:
+  nameOverride: ""
+  fullnameOverride: ""
+  #
+  # Application Config
+  #
+  application:
+    # Main application web UI port
+    port: 9705
+    # Access url base
+    urlBase: "huntarr"
+    config: null
+  #
+  # Resource - DEPLOYMENT
+  # This is to set up and define the application deployment
+  #
+  deployment:
+    container:
+      image:
+        repository: "ghcr.io/plexguide/huntarr"
+      env:
+        - name: "PGID"
+          value: "1000"
+        - name: "PUID"
+          value: "1000"
+        - name: "TZ"
+          value: "America/Los_Angeles"
+      # Additional volumeMounts on the output Deployment definition.
+      volumeMounts:
+        - name: "config"
+          mountPath: "/config"
+    volumes:
+      config:
+        persistentVolumeClaim:
+          claimName: "huntarr-config"
+  persistentVolumeClaims:
+    huntarr-config:
+      accessMode: "ReadWriteOnce"
+      requestStorage: "1Gi"
+      selector: 
+        matchLabels:
+          app.kubernetes.io/component: appdata-pv
+  ingress:
+    enabled: false
+lidarr:
+  nameOverride: ""
+  fullnameOverride: ""
+  #
+  # Secrets to create
+  #
+  secrets:
+    - name: "apiKey"
+      value: "a03be0d2a941f4c948a10ac515876864"
+  #
+  # Application Config
+  #
+  application:
+    # Main application web UI port
+    port: 8686
+    # Access url base
+    urlBase: "lidarr"
+    # ConfigMap for core application settings
+    config:
+      # Filename of configuration
+      filename: "config.xml"
+      # Configuration file contents
+      contents: |
+        <Config>
+          <LogLevel>info</LogLevel>
+          <EnableSsl>False</EnableSsl>
+          <Port>8686</Port>
+          <UrlBase>lidarr</UrlBase>
+          <BindAddress>*</BindAddress>
+          <ApiKey>$apiKey</ApiKey>
+          <AnalyticsEnabled>False</AnalyticsEnabled>
+          <AuthenticationMethod>External</AuthenticationMethod>
+          <UpdateMechanism>Docker</UpdateMechanism>
+          <Branch>main</Branch>
+          <InstanceName>Lidarr</InstanceName>
+        </Config>
+      # Secrets to inject - if any - to the config. In the config they must be defined as $secret
+      secrets: ["apiKey"]
+      # Path the file will be mounted to in the config
+      mountPath: "/config/config.xml"
+  #
+  # Resource - DEPLOYMENT
+  # This is to set up and define the application deployment
+  #
+  deployment:
+    container:
+      image:
+        repository: "lscr.io/linuxserver/lidarr"
+      env:
+        - name: "PGID"
+          value: "1000"
+        - name: "PUID"
+          value: "1000"
+      # Additional volumeMounts on the output Deployment definition.
+      volumeMounts:
+        - name: "config"
+          mountPath: "/config"
+        - name: "data"
+          mountPath: "/data"
+        - name: "data"
+          mountPath: "/downloads"
+          subPath: "downloads"
+        - name: "data"
+          mountPath: "/music"
+          subPath: "music"
+    volumes:
+      config:
+        persistentVolumeClaim:
+          claimName: "lidarr-config"
+      data:
+        persistentVolumeClaim:
+          claimName: "lidarr-data"
+  persistentVolumeClaims:
+    lidarr-config:
+      accessMode: "ReadWriteOnce"
+      requestStorage: "1Gi"
+      selector:         
+        matchLabels:
+          app.kubernetes.io/component: appdata-pv
+    lidarr-data:
+      accessMode: "ReadWriteOnce"
+      requestStorage: "100Gi"
+      selector:         
+        matchLabels:
+          app.kubernetes.io/component: media-pv
+  ingress:
+    enabled: false
+  metrics:
+    enabled: false
+    app: "lidarr"
+    port:
+      number: 9702
+prowlarr:
+  nameOverride: ""
+  fullnameOverride: ""
+  #
+  # Secrets to create
+  #
+  secrets:
+    - name: "apiKey"
+      value: "059c4fe437e150d4b07ab37b9d4f7d24"
+  #
+  # Application Config
+  #
+  application:
+    # Main application web UI port
+    port: 9696
+    # Access url base
+    urlBase: "prowlarr"
+    # ConfigMap for core application settings
+    config:
+      # Filename of configuration
+      filename: "config.xml"
+      # Configuration file contents
+      contents: |
+        <Config>
+          <LogLevel>info</LogLevel>
+          <EnableSsl>False</EnableSsl>
+          <Port>9696</Port>
+          <UrlBase>prowlarr</UrlBase>
+          <BindAddress>*</BindAddress>
+          <ApiKey>$apiKey</ApiKey>
+          <AnalyticsEnabled>False</AnalyticsEnabled>
+          <AuthenticationMethod>External</AuthenticationMethod>
+          <UpdateMechanism>Docker</UpdateMechanism>
+          <Branch>main</Branch>
+          <InstanceName>Prowlarr</InstanceName>
+        </Config>
+      # Secrets to inject - if any - to the config. In the config they must be defined as $secret
+      secrets: ["apiKey"]
+      # Path the file will be mounted to in the config
+      mountPath: "/config/config.xml"
+  #
+  # Resource - DEPLOYMENT
+  # This is to set up and define the application deployment
+  #
+  deployment:
+    container:
+      image:
+        repository: "lscr.io/linuxserver/prowlarr"
+      env:
+        - name: "PGID"
+          value: "1000"
+        - name: "PUID"
+          value: "1000"
+      # Additional volumeMounts on the output Deployment definition.
+      volumeMounts:
+        - name: "config"
+          mountPath: "/config"
+    volumes:
+      config:
+        persistentVolumeClaim:
+          claimName: "prowlarr-config"
+  persistentVolumeClaims:
+    prowlarr-config:
+      accessMode: "ReadWriteOnce"
+      requestStorage: "1Gi"
+      selector: 
+        matchLabels:
+          app.kubernetes.io/component: appdata-pv
+  ingress:
+    enabled: true
+  metrics:
+    enabled: false
+    app: "prowlarr"
+    port:
+      number: 9703
+    env:
+
+# - name: 'PROWLARR__BACKFILL'
+#   value: 'true'
+radarr:
+  nameOverride: ""
+  fullnameOverride: ""
+  #
+  # Secrets to create
+  #
+  secrets:
+    - name: "apiKey"
+      value: "27fab5735782916dca45411830acf9fa"
+  #
+  # Application Config
+  #
+  application:
+    # main application web ui port
+    port: 7878
+    # access url base
+    urlBase: "radarr"
+    # ConfigMap for core application settings
+    config:
+      # Filename of configuration
+      filename: "config.xml"
+      # Configuration file contents
+      contents: |
+        <Config>
+          <LogLevel>info</LogLevel>
+          <EnableSsl>False</EnableSsl>
+          <Port>7878</Port>
+          <UrlBase>radarr</UrlBase>
+          <BindAddress>*</BindAddress>
+          <ApiKey>$apiKey</ApiKey>
+          <AnalyticsEnabled>False</AnalyticsEnabled>
+          <AuthenticationMethod>External</AuthenticationMethod>
+          <UpdateMechanism>Docker</UpdateMechanism>
+          <Branch>master</Branch>
+          <InstanceName>Radarr</InstanceName>
+        </Config>
+      # Secrets to inject - if any - to the config. In the config they must be defined as $secret
+      secrets: ["apiKey"]
+      # Path the file will be mounted to in the config
+      mountPath: "/config/config.xml"
+  #
+  # Resource - DEPLOYMENT
+  # This is to set up and define the application deployment
+  #
+  deployment:
+    container:
+      image:
+        repository: "lscr.io/linuxserver/radarr"
+      env:
+        - name: "PGID"
+          value: "1000"
+        - name: "PUID"
+          value: "1000"
+      # Additional volumeMounts on the output Deployment definition.
+      volumeMounts:
+        - name: "config"
+          mountPath: "/config"
+        - name: "data"
+          mountPath: "/data"
+        - name: "data"
+          mountPath: "/downloads"
+          subPath: "downloads"
+        - name: "data"
+          mountPath: "/movies"
+          subPath: "movies"
+    volumes:
+      config:
+        persistentVolumeClaim:
+          claimName: "radarr-config"
+      data:
+        persistentVolumeClaim:
+          claimName: "radarr-data"
+  persistentVolumeClaims:
+    radarr-config:
+      accessMode: "ReadWriteOnce"
+      requestStorage: "1Gi"
+      selector:
+         matchLabels:
+          app.kubernetes.io/component: appdata-pv
+
+    radarr-data:
+      accessMode: "ReadWriteOnce"
+      requestStorage: "500Gi"
+      selector:
+         matchLabels:
+          app.kubernetes.io/component: media-pv
+  ingress:
+    enabled: true
+  metrics:
+    enabled: false
+    app: "radarr"
+    port:
+      number: 9704
+sonarr:
+  nameOverride: ""
+  fullnameOverride: ""
+  #
+  # Secrets to create
+  #
+  secrets:
+    - name: "apiKey"
+      value: "b2b9a1cc4008e6f51a9ba3380c332e21"
+  #
+  # Application Config
+  #
+  application:
+    # Main application web UI port
+    port: 8989
+    # Access url base
+    urlBase: "sonarr"
+    # ConfigMap for core application settings
+    config:
+      # Filename of configuration
+      filename: "config.xml"
+      # Configuration file contents
+      contents: |
+        <Config>
+            <LogLevel>info</LogLevel>
+            <EnableSsl>False</EnableSsl>
+            <Port>8989</Port>
+            <UrlBase>sonarr</UrlBase>
+            <BindAddress>*</BindAddress>
+            <ApiKey>$apiKey</ApiKey>
+            <AnalyticsEnabled>False</AnalyticsEnabled>
+            <AuthenticationMethod>External</AuthenticationMethod>
+            <UpdateMechanism>Docker</UpdateMechanism>
+            <Branch>main</Branch>
+            <InstanceName>Sonarr</InstanceName>
+          </Config>
+      # Secrets to inject - if any - to the config. In the config they must be defined as $secret
+      secrets: ["apiKey"]
+      # Path the file will be mounted to in the config
+      mountPath: "/config/config.xml"
+  #
+  # Resource - DEPLOYMENT
+  # This is to set up and define the application deployment
+  #
+  deployment:
+    container:
+      image:
+        repository: "lscr.io/linuxserver/sonarr"
+      env:
+        - name: "PGID"
+          value: "1000"
+        - name: "PUID"
+          value: "1000"
+      # Additional volumeMounts on the output Deployment definition.
+      volumeMounts:
+        - name: "config"
+          mountPath: "/config"
+        - name: "data"
+          mountPath: "/data"
+        - name: "data"
+          mountPath: "/downloads"
+          subPath: "downloads"
+        - name: "data"
+          mountPath: "/tv"
+          subPath: "tv"
+    volumes:
+      config:
+        persistentVolumeClaim:
+          claimName: "sonarr-config"
+      data:
+        persistentVolumeClaim:
+          claimName: "sonarr-data"
+  persistentVolumeClaims:
+    sonarr-config:
+      accessMode: "ReadWriteOnce"
+      requestStorage: "1Gi"
+      selector:         
+        matchLabels:
+          app.kubernetes.io/component: appdata-pv
+    sonarr-data:
+      accessMode: "ReadWriteOnce"
+      requestStorage: "500Gi"
+      selector:         
+        matchLabels:
+          app.kubernetes.io/component: appdata-pv
+  ingress:
+    enabled: false
+  metrics:
+    enabled: false
+    app: "sonarr"
+    port:
+      number: 9706
+sabnzbd:
+  enabled: false
+  secrets:
+    - name: "apiKey"
+      value: "00e65acd0129a51c6360e68f5dffe4f2"
+    - name: "nzbKey"
+      value: "nzbKey"
+    - name: "newsreaderServerPassword"
+      value: "2980340c12d011239ec2e29b771144e8"
+  #
+  # Application Config
+  #
+  application:
+    # main application web ui port
+    port: 8080
+    # access url base
+    urlBase: "sabnzbd"
+    # ConfigMap for core application settings
+    config:
+      # Filename of configuration
+      filename: "sabnzbd.ini"
+      # Configuration file contents
+      contents: |
+        [misc]
+        language = en
+        queue_limit = 20
+        port = 8080
+        api_key = $apiKey
+        nzb_key = $nzbKey
+        download_dir = Downloads/incomplete
+        complete_dir = Downloads/complete
+        host_whitelist =
+        # [servers]
+        # [[yournewsreader.example.org]]
+        # name = yournewsreader.example.org
+        # displayname = yourNewsReader
+        # host = yournewsreader.example.org
+        # port = 563
+        # username = username
+        # password = $newsreaderServerPassword
+        # connections = 8
+        # ssl = 1
+        # ssl_verify = 2
+        # enable = 1
+        # priority = 0
+      secrets: ["apiKey", "nzbKey", "newsreaderServerPassword"]
+      # path the file will be mounted to in the config
+      mountPath: "/config/sabnzbd.ini"
+  #
+  # Resource - DEPLOYMENT
+  # This is to set up and define the application deployment
+  #
+  deployment:
+    container:
+      image:
+        repository: "lscr.io/linuxserver/sabnzbd"
+      env:
+        - name: "PGID"
+          value: "1000"
+        - name: "PUID"
+          value: "1000"
+      # Additional volumeMounts on the output Deployment definition.
+      volumeMounts:
+        - name: "config"
+          mountPath: "/config"
+        - name: "downloads"
+          mountPath: "/config/Downloads"
+    volumes:
+      config:
+        persistentVolumeClaim:
+          claimName: "sabnzbd-config"
+      downloads:
+        persistentVolumeClaim:
+          claimName: 'sabnzbd-data'
+  persistentVolumeClaims:
+    sabnzbd-config:
+      accessMode: "ReadWriteOnce"
+      requestStorage: "1Gi"
+      selector: 
+        matchLabels:
+          app.kubernetes.io/component: appdata-pv
+    sabnzbd-data:
+      accessMode: "ReadWriteOnce"
+      requestStorage: "10Gi"
+      selector: 
+        matchLabels:
+          app.kubernetes.io/component: media-pv
+  ingress:
+    enabled: false
+  metrics:
+    enabled: true
+    app: "sabnzbd"
+    port:
+      number: 9707
+cleanuparr:
+  # Default library values
+  nameOverride: ''
+  fullnameOverride: ''
+
+  #
+  # Secrets to create
+  #
+  secrets:
+    - name: 'apiKey'
+      value: '0e8c5f3f4f3a56e9c430160c4b9f4ef2'
+    - name: 'sonarrApiKey'
+      value: 'b2b9a1cc4008e6f51a9ba3380c332e21'
+    - name: 'radarrApiKey'
+      value: '27fab5735782916dca45411830acf9fa'
+
+  #
+  # Application Config
+  #
+  application:
+    # Main application web UI port
+    port: 11011
+    # Access url base
+    urlBase: 'cleanuparr'
+    config: null
+
+  #
+  # Resource - DEPLOYMENT
+  # This is to set up and define the application deployment
+  #
+  deployment:
+    container:
+      image:
+        repository: 'ghcr.io/cleanuparr/cleanuparr'
+
+      env:
+        - name: 'PGID'
+          value: '1000'
+        - name: 'PUID'
+          value: '1000'
+
+      livenessProbe:
+        httpGet:
+          path: '/cleanuparr/health'
+          port: 'http'
+        initialDelaySeconds: 30
+      readinessProbe:
+        httpGet:
+          path: '/cleanuparr/health/ready'
+          port: 'http'
+        initialDelaySeconds: 15
+
+      # Additional volumeMounts on the output Deployment definition.
+      volumeMounts:
+        - name: 'config'
+          mountPath: '/config'
+
+    volumes:
+      config:
+        persistentVolumeClaim:
+          claimName: 'cleanuparr-config'
+
+  persistentVolumeClaims:
+    cleanuparr-config:
+      accessMode: 'ReadWriteOnce'
+      requestStorage: '1Gi'
+      selector: 
+        matchLabels:
+          app.kubernetes.io/component: appdata-pv
+
+  ingress:
+    enabled: false
+qbittorrent:
+  # Default library values
+  nameOverride: ''
+  fullnameOverride: ''
+
+  #
+  # Secrets to create
+  #
+  secrets: []
+
+  #
+  # Application Config
+  #
+  application:
+    # Main application web UI port
+    port: 8080
+    # Access url base
+    urlBase: 'qbittorrent'
+    config: null
+
+  #
+  # Resource - DEPLOYMENT
+  # This is to set up and define the application deployment
+  #
+  deployment:
+    container:
+      image:
+        repository: 'lscr.io/linuxserver/qbittorrent'
+
+      env:
+        - name: 'PGID'
+          value: '1000'
+        - name: 'PUID'
+          value: '1000'
+        - name: 'WEBUI_PORT'
+          value: '8080'
+
+      # Additional volumeMounts on the output Deployment definition.
+      volumeMounts:
+        - name: 'config'
+          mountPath: '/config'
+        - name: 'data'
+          mountPath: '/data'
+        - name: 'data'
+          mountPath: '/downloads'
+          subPath: 'downloads'
+
+    volumes:
+      config:
+        persistentVolumeClaim:
+          claimName: 'qbittorrent-config'
+      data:
+        persistentVolumeClaim:
+          claimName: 'qbittorrent-data'
+
+  persistentVolumeClaims:
+    qbittorrent-config:
+      accessMode: 'ReadWriteOnce'
+      requestStorage: '1Gi'
+      selector: 
+        matchLabels:
+          app.kubernetes.io/component: appdata-pv
+    qbittorrent-data:
+      accessMode: 'ReadWriteOnce'
+      requestStorage: '100Gi'
+      selector: 
+        matchLabels:
+          app.kubernetes.io/component: media-pv
+
+  service:
+    type: 'ClusterIP'
+    ports:
+      - targetPort: 'http'
+        protocol: 'TCP'
+        name: 'http'
+
+  ingress:
+    enabled: true
+
+  metrics:
+    enabled: false
+    app: 'qbittorrent'
+    port:
+      number: 9708

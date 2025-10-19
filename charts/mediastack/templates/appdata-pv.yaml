@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: appdata-pv
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: mediastack
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: "appdata-pv"
+spec:
+  capacity:
+    storage: {{ .Values.storage.appdata.size }}
+  volumeMode: Filesystem
+  accessModes:
+  - {{ .Values.storage.appdata.accessMode }}
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: {{ .Values.storage.appdata.mountPath }}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - supersussywebsite

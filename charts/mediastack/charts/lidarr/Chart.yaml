@@ -1,0 +1,29 @@
+apiVersion: v2
+appVersion: 2.14.5
+dependencies:
+- name: media-servarr-base
+  repository: file://../..
+  version: 0.9.0
+description: Music collection manager for Usenet and BitTorrent users.
+home: https://github.com/drinkataco/media-servarr/tree/main/charts/lidarr
+icon: https://github.com/drinkataco/media-servarr/blob/main/charts/radarr/icon.png
+keywords:
+- music
+- torrent
+- bittorrent
+- usenet
+- manager
+- lidarr
+kubeVersion: '>=1.24.0-0'
+maintainers:
+- email: git@jo.shw.al
+  name: media-servarr
+  url: https://github.com/drinkataco/media-servarr/
+name: lidarr
+sources:
+- https://github.com/Lidarr/Lidarr
+- https://github.com/linuxserver/docker-lidarr
+- https://ghcr.io/onedr0p/exportarr
+- https://github.com/drinkataco/media-servarr/tree/main/charts/lidarr
+type: application
+version: 0.15.0

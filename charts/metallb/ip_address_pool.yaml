@@ -1,0 +1,8 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: "metallb-address-pool"
+  namespace: metallb-system
+spec: 
+  addresses:
+    - 192.168.70.125/16 # Please replace this. Please also include CIDR. Ex: 51.568.145.125/32

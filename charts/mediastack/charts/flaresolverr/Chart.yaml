@@ -1,0 +1,25 @@
+apiVersion: v2
+appVersion: v3.4.2
+dependencies:
+- name: media-servarr-base
+  repository: file://../..
+  version: 0.9.0
+description: Proxy server to bypass Cloudflare and DDoS-GUARD protection.
+home: https://github.com/drinkataco/media-servarr/tree/main/charts/flaresolverr
+icon: https://github.com/drinkataco/media-servarr/blob/main/charts/flaresolverr/icon.png
+keywords:
+- flaresolverr
+- proxy
+- cloudflare
+- bypass
+kubeVersion: '>=1.24.0-0'
+maintainers:
+- email: git@jo.shw.al
+  name: media-servarr
+  url: https://github.com/drinkataco/media-servarr/
+name: flaresolverr
+sources:
+- https://github.com/FlareSolverr/FlareSolverr
+- https://github.com/drinkataco/media-servarr/tree/main/charts/flaresolverr
+type: application
+version: 0.8.2

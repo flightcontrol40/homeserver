@@ -1,0 +1,27 @@
+apiVersion: v2
+appVersion: 4.0.6
+dependencies:
+- name: media-servarr-base
+  repository: file://../..
+  version: 0.9.0
+description: Simple and easy BitTorrent Client
+home: https://github.com/drinkataco/media-servarr/tree/main/charts/transmission
+icon: https://github.com/drinkataco/media-servarr/blob/main/charts/transmission/icon.png
+keywords:
+- transmission
+- bittorrent
+- torrent
+- download
+- usenet
+kubeVersion: '>=1.24.0-0'
+maintainers:
+- email: git@jo.shw.al
+  name: media-servarr
+  url: https://github.com/drinkataco/media-servarr/
+name: transmission
+sources:
+- https://github.com/transmission/transmission
+- https://github.com/linuxserver/docker-transmission
+- https://github.com/drinkataco/media-servarr/tree/main/charts/transmission
+type: application
+version: 0.8.3

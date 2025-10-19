@@ -1,0 +1,88 @@
+# Default library values
+nameOverride: ''
+fullnameOverride: ''
+
+#
+# Secrets to create
+#
+secrets:
+  - name: 'apiKey'
+    value: ''
+
+#
+# Application Config
+#
+application:
+  # main application web ui port
+  port: 7878
+  # access url base
+  urlBase: 'radarr'
+  # ConfigMap for core application settings
+  config:
+    # Filename of configuration
+    filename: 'config.xml'
+    # Configuration file contents
+    contents: |
+      <Config>
+        <LogLevel>info</LogLevel>
+        <EnableSsl>False</EnableSsl>
+        <Port>7878</Port>
+        <UrlBase>radarr</UrlBase>
+        <BindAddress>*</BindAddress>
+        <ApiKey>$apiKey</ApiKey>
+        <AnalyticsEnabled>False</AnalyticsEnabled>
+        <AuthenticationMethod>External</AuthenticationMethod>
+        <UpdateMechanism>Docker</UpdateMechanism>
+        <Branch>master</Branch>
+        <InstanceName>Radarr</InstanceName>
+      </Config>
+    # Secrets to inject - if any - to the config. In the config they must be defined as $secret
+    secrets: [ 'apiKey' ]
+    # Path the file will be mounted to in the config
+    mountPath: '/config/config.xml'
+
+#
+# Resource - DEPLOYMENT
+# This is to set up and define the application deployment
+#
+deployment:
+  container:
+    image:
+      repository: 'lscr.io/linuxserver/radarr'
+
+    env:
+      - name: 'PGID'
+        value: '1000'
+      - name: 'PUID'
+        value: '1000'
+
+    # Additional volumeMounts on the output Deployment definition.
+    volumeMounts:
+      - name: 'config'
+        mountPath: '/config'
+      - name: 'downloads'
+        mountPath: '/downloads'
+      - name: 'film'
+        mountPath: '/film'
+
+  volumes:
+    config:
+      persistentVolumeClaim:
+        claimName: 'radarr-config'
+    downloads:
+    film:
+
+persistentVolumeClaims:
+  radarr-config:
+    accessMode: 'ReadWriteOnce'
+    requestStorage: '1Gi'
+    selector: {}
+
+ingress:
+  enabled: true
+
+metrics:
+  enabled: false
+  app: 'radarr'
+  port:
+    number: 9704

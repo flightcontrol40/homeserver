@@ -1,0 +1,3 @@
+#! /bin/bash
+# Acts as a wrapper for the microk8s helm3 command to ensure the correct kubeconfig is used.
+microk8s helm3 "$@"

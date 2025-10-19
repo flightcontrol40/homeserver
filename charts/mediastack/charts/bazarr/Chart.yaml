@@ -1,0 +1,31 @@
+apiVersion: v2
+appVersion: 1.5.3
+dependencies:
+- name: media-servarr-base
+  repository: file://../..
+  version: 0.9.0
+description: Companion application to Sonarr and Radarr to manage and download subtitles
+home: https://github.com/drinkataco/media-servarr/tree/main/charts/bazarr
+icon: https://github.com/drinkataco/media-servarr/blob/main/charts/bazarr/icon.png
+keywords:
+- subtitles
+- torrent
+- bittorrent
+- usenet
+- manager
+- radarr
+- sonarr
+- bazarr
+kubeVersion: '>=1.24.0-0'
+maintainers:
+- email: git@jo.shw.al
+  name: media-servarr
+  url: https://github.com/drinkataco/media-servarr/
+name: bazarr
+sources:
+- https://github.com/morpheus65535/Bazarr
+- https://github.com/linuxserver/docker-bazarr
+- https://ghcr.io/onedr0p/exportarr
+- https://github.com/drinkataco/media-servarr/tree/main/charts/bazarr
+type: application
+version: 0.8.4
