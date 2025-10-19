@@ -1,0 +1,157 @@
+{{- if .Values.crowdsec.enabled }}
+{{- include "mediastack.configPVC" (dict "service" "crowdsec" "context" .) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crowdsec
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: crowdsec
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.crowdsec.service.port }}
+      targetPort: api
+      protocol: TCP
+      name: api
+    - port: 6060
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+    - port: 7422
+      targetPort: waf
+      protocol: TCP
+      name: waf
+  selector:
+    app.kubernetes.io/name: crowdsec
+    app.kubernetes.io/instance: {{ .Release.Name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crowdsec
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: crowdsec
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: crowdsec
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: crowdsec
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: crowdsec
+    spec:
+      {{- if .Values.nodeAffinity }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - {{ .Values.nodeAffinity.hostname }}
+      {{- end }}
+      containers:
+        - name: crowdsec
+          image: "{{ .Values.crowdsec.image.repository }}:{{ .Values.crowdsec.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: api
+              containerPort: {{ .Values.crowdsec.service.port }}
+              protocol: TCP
+            - name: metrics
+              containerPort: 6060
+              protocol: TCP
+            - name: waf
+              containerPort: 7422
+              protocol: TCP
+          env:
+            - name: TZ
+              value: {{ .Values.global.timezone }}
+            - name: PGID
+              value: {{ .Values.global.pgid | quote }}
+            - name: PUID
+              value: {{ .Values.global.puid | quote }}
+            {{- range .Values.crowdsec.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/crowdsec
+              {{- if .Values.crowdsec.persistence.subPath }}
+              subPath: crowdsec
+              {{- end }}
+            - name: data
+              mountPath: /var/lib/crowdsec/data
+              {{- if .Values.crowdsec.persistence.subPath }}
+              subPath: crowdsec/data
+              {{- end }}
+            {{- if .Values.crowdsec.logs.enabled }}
+            - name: logs
+              mountPath: /logs
+              readOnly: true
+              {{- if .Values.crowdsec.persistence.subPath }}
+              subPath: logs
+              {{- end }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.crowdsec.resources | nindent 12 }}
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: crowdsec-config-pvc
+        - name: data
+          persistentVolumeClaim:
+            claimName: crowdsec-config-pvc
+        {{- if .Values.crowdsec.logs.enabled }}
+        - name: logs
+          persistentVolumeClaim:
+            claimName: crowdsec-config-pvc
+        {{- end }}
+---
+{{- if .Values.crowdsec.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: crowdsec
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: crowdsec
+  annotations:
+    {{- toYaml .Values.crowdsec.ingress.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.crowdsec.ingress.className }}
+  rules:
+    - host: {{ .Values.crowdsec.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: crowdsec
+                port:
+                  number: {{ .Values.crowdsec.service.port }}
+  {{- if and .Values.crowdsec.ingress.tls .Values.crowdsec.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.crowdsec.ingress.host }}
+      {{- if .Values.crowdsec.ingress.tls.secretName }}
+      secretName: {{ .Values.crowdsec.ingress.tls.secretName }}
+      {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

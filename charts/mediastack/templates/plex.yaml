@@ -1,0 +1,141 @@
+{{- if .Values.plex.enabled }}
+{{- include "mediastack.configPVC" (dict "service" "plex" "context" .) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plex
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: plex
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: plex
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: plex
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: plex
+    spec:
+      {{- if .Values.nodeAffinity }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - {{ .Values.nodeAffinity.hostname }}
+      {{- end }}
+      containers:
+        - name: plex
+          image: "{{ .Values.plex.image.repository }}:{{ .Values.plex.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.plex.service.port }}
+              protocol: TCP
+            - name: dlna-tcp
+              containerPort: 32469
+              protocol: TCP
+          env:
+            {{- include "mediastack.commonEnv" . | nindent 12 }}
+            {{- if .Values.plex.claim }}
+            - name: PLEX_CLAIM
+              value: {{ .Values.plex.claim | quote }}
+            {{- end }}
+            {{- with .Values.plex.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: media
+              mountPath: /data/media
+              readOnly: true
+          {{- with .Values.plex.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.plex.devices }}
+          securityContext:
+            privileged: true
+          {{- end }}
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: plex-config-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plex
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: plex
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.plex.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 32469
+      targetPort: dlna-tcp
+      protocol: TCP
+      name: dlna-tcp
+  selector:
+    app.kubernetes.io/name: plex
+    app.kubernetes.io/instance: {{ .Release.Name }}
+---
+{{- if .Values.plex.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: plex
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: plex
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: {{ .Values.global.traefik.entrypoint }}
+    {{- if .Values.global.traefik.tls.enabled }}
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    {{- end }}
+    {{- $middlewares := include "mediastack.traefikMiddlewares" (dict "global" .Values.global "service" .Values.plex) }}
+    {{- if $middlewares }}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ $middlewares }}
+    {{- end }}
+spec:
+  ingressClassName: traefik
+  {{- if .Values.global.traefik.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.plex.ingress.host }}.{{ .Values.global.domain }}
+      secretName: plex-tls
+  {{- end }}
+  rules:
+    - host: {{ .Values.plex.ingress.host }}.{{ .Values.global.domain }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: plex
+                port:
+                  number: {{ .Values.plex.service.port }}
+{{- end }}
+{{- end }}

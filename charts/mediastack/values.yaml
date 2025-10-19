@@ -1,0 +1,770 @@
+# Example values.yaml for MediaStack Kubernetes
+# Copy this file and customize for your environment
+
+global:
+  # YOUR DOMAIN NAME - Change this!
+  domain: "supersussywebsite.com"
+  
+  namespace: "mediastack"
+  
+  # Your timezone - Change to your location
+  # Find yours at: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  timezone: "America/Los_Angeles"
+  
+  # User and Group IDs - Run `id -u` and `id -g` to find yours
+  puid: "1000"
+  pgid: "1000"
+  umask: "002"
+  
+  imagePullPolicy: IfNotPresent
+  
+  traefik:
+    entrypoint: "web"
+    middlewares: []
+      # Temporarily disabled: - security-headers@file
+    tls:
+      enabled: false
+
+storage:
+  # Configuration for Rancher local-path-provisioner
+  # Install: kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.24/deploy/local-path-storage.yaml
+  
+  # Per-pod config storage (not shared between pods)
+  # Each service gets its own PVC for configuration
+  config:
+    enabled: true
+    storageClass: "local-path"  # Default local-path-provisioner StorageClass
+    size: "5Gi"  # Size for each service's config volume
+    accessMode: "ReadWriteOnce"  # Each pod has its own config
+    # Optional: Override the base path where local-path-provisioner stores data
+    # Default is /opt/local-path-provisioner
+    # basePath: "/mediastack/appdata"
+  
+  # Shared media storage (accessible by all pods simultaneously)
+  # Used for: media library, completed downloads
+  media:
+    enabled: true
+    storageClass: "local-path"
+    size: "1Ti"
+    # Note: local-path-provisioner only supports ReadWriteOnce by default
+    # For ReadWriteMany, you'll need to use NFS or configure local-path with a shared filesystem
+    accessMode: "ReadWriteOnce"
+    # Optional: Use a specific path for media storage
+    # You can create a custom StorageClass that uses a specific path
+    # basePath: "/mediastack/media"
+  
+  # Shared downloads storage (accessible by all pods simultaneously)
+  # Used for: active downloads, incomplete files
+  downloads:
+    enabled: true
+    storageClass: "local-path"
+    size: "200Gi"
+    accessMode: "ReadWriteOnce"
+    # Optional: Use a specific path for downloads storage
+    # basePath: "/mediastack/downloads"
+
+# CHANGE THIS to your node hostname (run: kubectl get nodes)
+nodeAffinity:
+  hostname: "supersussywebsite"
+
+postgresql:
+  enabled: true
+  image:
+    repository: postgres
+    tag: "16-alpine"
+  auth:
+    # CHANGE THESE PASSWORDS!
+    postgresPassword: "vGNoP1mabFTpDVFUQJMam6AC92H9"
+    username: "mediastack"
+    password: "q3PVdx36FnGNRoBu65E0XqW3Ro9m"
+    database: "authentik"
+  service:
+    port: 5432
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+  persistence:
+    size: "10Gi"
+
+# MEDIA SERVERS - Enable the one(s) you want
+
+jellyfin:
+  enabled: false  # Open-source media server
+  image:
+    repository: lscr.io/linuxserver/jellyfin
+    tag: "latest"
+  service:
+    port: 8096
+  ingress:
+    enabled: true
+    host: "jellyfin"
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "4Gi"
+      cpu: "2000m"
+
+plex:
+  enabled: true  # Enable if you want Plex (can run both)
+  image:
+    repository: lscr.io/linuxserver/plex
+    tag: "latest"
+  service:
+    port: 32400
+  ingress:
+    enabled: true
+    host: "plex"
+  # Get your claim token from: https://www.plex.tv/claim/
+  claim: "claim-LYxrXcRL4jNQYjuXQHzy"
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "1000m"
+    limits:
+      memory: "8Gi"
+      cpu: "4000m"
+
+# *ARR APPLICATIONS - Media library managers
+
+prowlarr:
+  enabled: true  # Indexer manager (configure this first!)
+  image:
+    repository: lscr.io/linuxserver/prowlarr
+    tag: "develop"
+  service:
+    port: 9696
+  ingress:
+    enabled: true
+    host: "prowlarr"
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+radarr:
+  enabled: true  # Movies
+  image:
+    repository: lscr.io/linuxserver/radarr
+    tag: "latest"
+  service:
+    port: 7878
+  ingress:
+    enabled: true
+    host: "radarr"
+  env:
+    - name: DOCKER_MODS
+      value: "ghcr.io/themepark-dev/theme.park:radarr"
+    - name: TP_THEME
+      value: "dark"
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+sonarr:
+  enabled: true  # TV Shows
+  image:
+    repository: lscr.io/linuxserver/sonarr
+    tag: "latest"
+  service:
+    port: 8989
+  ingress:
+    enabled: true
+    host: "sonarr"
+  env:
+    - name: DOCKER_MODS
+      value: "ghcr.io/themepark-dev/theme.park:sonarr"
+    - name: TP_THEME
+      value: "dark"
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+lidarr:
+  enabled: true  # Music
+  image:
+    repository: lscr.io/linuxserver/lidarr
+    tag: "latest"
+  service:
+    port: 8686
+  ingress:
+    enabled: true
+    host: "lidarr"
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+readarr:
+  enabled: false  # Books/Audiobooks
+  image:
+    repository: lscr.io/linuxserver/readarr
+    tag: "develop"
+  service:
+    port: 8787
+  ingress:
+    enabled: true
+    host: "readarr"
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+whisparr:
+  enabled: false  # Adult content
+  image:
+    repository: hotio/whisparr
+    tag: "nightly"
+  service:
+    port: 6969
+  ingress:
+    enabled: true
+    host: "whisparr"
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+bazarr:
+  enabled: true  # Subtitles
+  image:
+    repository: lscr.io/linuxserver/bazarr
+    tag: "latest"
+  service:
+    port: 6767
+  ingress:
+    enabled: true
+    host: "bazarr"
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+# DOWNLOAD CLIENTS
+
+qbittorrent:
+  enabled: false  # Torrent client
+  image:
+    repository: lscr.io/linuxserver/qbittorrent
+    tag: "latest"
+  service:
+    port: 8080
+    torrentPort: 6881
+  ingress:
+    enabled: true
+    host: "qbittorrent"
+  env:
+    - name: WEBUI_PORT
+      value: "8080"
+  
+  # VPN Configuration for Mullvad
+  vpn:
+    enabled: true  # ENABLE THIS to route torrents through VPN
+    provider: "mullvad"
+    
+    # Optional: Specific server selection
+    serverCountries: ""  # e.g., "Sweden" or "Netherlands,Germany"
+    serverCities: ""     # e.g., "Stockholm" for specific city
+    
+    # Allow access from your local network
+    allowedSubnets: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+    
+    # WireGuard Configuration
+    # Get these from your Mullvad account: https://mullvad.net/en/account/wireguard-config
+    wireguard:
+      # Step 1: Generate a WireGuard key in your Mullvad account
+      # Step 2: Copy the private key here
+      privateKey: "6F1W+lhViLfYqYWmptzZy/y0wqUiJjiMqtAeGfGh0XQ="
+      
+      # Step 3: Select a Mullvad server and copy its public key
+      publicKey: "bZQF7VRDRK/JUJ8L6EFzF/zRw2tsqMRk6FesGtTgsC0="
+      
+      # Step 4: Copy your assigned IP addresses from Mullvad
+      # NOTE: If you have IPv6 connectivity issues, remove the IPv6 address
+      # (the one starting with fc00:) and only keep the IPv4 address
+      # THIS IS REQUIRED - Get it from your Mullvad account
+      addresses: "10.71.237.120/32"
+      # Example with both: "10.66.123.45/32,fc00:bbbb:bbbb:bb01::4:abcd/128"
+      # Example IPv4 only: "10.66.123.45/32"
+      
+      # Optional: Preshared key (only if Mullvad provides one)
+      presharedKey: ""
+      
+      # Step 5: Copy the server endpoint details
+      endpoint:
+        ip: "45.134.140.130"  # Mullvad server IP
+        port: "51820"  # Usually 51820 for Mullvad
+  
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "200m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+transmission:
+  enabled: true  # Torrent client (alternative to qbittorrent)
+  image:
+    repository: lscr.io/linuxserver/transmission
+    tag: "latest"
+  service:
+    port: 9091
+    peerPort: 51413
+  ingress:
+    enabled: true
+    host: "transmission"
+  
+  # RPC Password Configuration (optional)
+  rpcPassword:
+    enabled: true
+    value: "password"  # CHANGE THIS!
+  rpcUsername: ""  # Optional: set RPC username
+  
+  # Transmission Configuration
+  # These settings mirror the settings.json configuration
+  config:
+    # Speed settings
+    altSpeedDown: 50
+    altSpeedEnabled: false
+    altSpeedTimeBegin: 540
+    altSpeedTimeDay: 127
+    altSpeedTimeEnabled: false
+    altSpeedTimeEnd: 1020
+    altSpeedUp: 50
+    speedLimitDown: 10024  # KB/s
+    speedLimitDownEnabled: true
+    speedLimitUp: 5012  # KB/s
+    speedLimitUpEnabled: true
+    
+    # Security settings
+    antiBruteForceEnabled: false
+    antiBruteForceThreshold: 100
+    blocklistEnabled: true
+    blocklistUrl: "https://github.com/Naunter/BT_BlockLists/raw/master/bt_blocklists.gz"
+    
+    # Connection settings
+    dhtEnabled: true
+    lpdEnabled: false
+    pexEnabled: false
+    tcpEnabled: true
+    utpEnabled: false
+    portForwardingEnabled: true
+    
+    # Download settings
+    downloadQueueEnabled: true
+    downloadQueueSize: 5
+    incompleteDirEnabled: true
+    startAddedTorrents: true
+    watchDirEnabled: true
+    
+    # Seeding settings
+    idleSeedingLimit: 30
+    idleSeedingLimitEnabled: false
+    ratioLimit: 2
+    ratioLimitEnabled: false
+    seedQueueEnabled: false
+    seedQueueSize: 10
+    
+    # Performance settings
+    cacheSizeMb: 4
+    encryption: 1  # 0=prefer unencrypted, 1=prefer encrypted, 2=require encrypted
+    peerLimitGlobal: 300
+    peerLimitPerTorrent: 50
+    uploadSlotsPerTorrent: 14
+    preallocation: 1
+    prefetchEnabled: true
+    queueStalledEnabled: true
+    queueStalledMinutes: 30
+    
+    # File handling
+    renamePartialFiles: true
+    trashOriginalTorrentFiles: false
+    torrentAddedVerifyMode: "fast"
+    scrapePausedTorrentsEnabled: true
+    
+    # Other settings
+    messageLevel: 2
+    peerIdTtlHours: 6
+  
+  env: []
+  
+  # VPN Configuration for Mullvad
+  vpn:
+    enabled: true  # ENABLE THIS to route torrents through VPN
+    provider: "mullvad"
+    
+    # Optional: Specific server selection
+    serverCountries: ""  # e.g., "Sweden" or "Netherlands,Germany"
+    serverCities: ""     # e.g., "Stockholm" for specific city
+    
+    # Allow access from your local network
+    allowedSubnets: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+    
+    # WireGuard Configuration
+    # Get these from your Mullvad account: https://mullvad.net/en/account/wireguard-config
+    wireguard:
+      # Step 1: Generate a WireGuard key in your Mullvad account
+      # Step 2: Copy the private key here
+      privateKey: "6F1W+lhViLfYqYWmptzZy/y0wqUiJjiMqtAeGfGh0XQ="
+      
+      # Step 3: Select a Mullvad server and copy its public key
+      publicKey: "bZQF7VRDRK/JUJ8L6EFzF/zRw2tsqMRk6FesGtTgsC0="
+  
+      # Step 4: Copy your assigned IP addresses from Mullvad
+      # NOTE: If you have IPv6 connectivity issues, remove the IPv6 address
+      # (the one starting with fc00:) and only keep the IPv4 address
+      # THIS IS REQUIRED - Get it from your Mullvad account
+      addresses: "10.71.237.120/32"
+      # Example with both: "10.66.123.45/32,fc00:bbbb:bbbb:bb01::4:abcd/128"
+      # Example IPv4 only: "10.66.123.45/32"
+      
+      # Optional: Preshared key (only if Mullvad provides one)
+      presharedKey: ""
+      
+      # Step 5: Copy the server endpoint details
+      endpoint:
+        ip: "45.134.140.130"  # Mullvad server IP
+        port: "51820"  # Usually 51820 for Mullvad
+    
+    # Port Forwarding Configuration
+    # Automatically updates Transmission's peer port when using VPN providers
+    # that support dynamic port forwarding (like ProtonVPN)
+    portForwarding:
+      enabled: false  # Enable if your VPN provider supports port forwarding
+      errorRetrySeconds: 60    # How long to wait after an error before retrying
+      updateCheckSeconds: 120  # How often to check for port changes
+  
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "200m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+sabnzbd:
+  enabled: false  # Usenet client
+  image:
+    repository: lscr.io/linuxserver/sabnzbd
+    tag: "latest"
+  service:
+    port: 8080
+  ingress:
+    enabled: true
+    host: "sabnzbd"
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "200m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+# SUPPORTING SERVICES
+
+flaresolverr:
+  enabled: true  # Cloudflare bypass (needed for some indexers)
+  image:
+    repository: ghcr.io/flaresolverr/flaresolverr
+    tag: "latest"
+  service:
+    port: 8191
+  ingress:
+    enabled: false  # Internal service only
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+jellyseerr:
+  enabled: false  # Media request management
+  image:
+    repository: fallenbagel/jellyseerr
+    tag: "latest"
+  service:
+    port: 5055
+  ingress:
+    enabled: true
+    host: "jellyseerr"
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+# DASHBOARDS - Choose one
+
+homarr:
+  enabled: true  # Modern dashboard
+  image:
+    repository: ghcr.io/ajnart/homarr
+    tag: "latest"
+  service:
+    port: 7575
+  ingress:
+    enabled: true
+    host: "homarr"
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+heimdall:
+  enabled: false  # Classic dashboard
+  image:
+    repository: lscr.io/linuxserver/heimdall
+    tag: "latest"
+  service:
+    port: 80
+  ingress:
+    enabled: true
+    host: "heimdall"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "50m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+homepage:
+  enabled: false  # Alternative dashboard
+  image:
+    repository: ghcr.io/gethomepage/homepage
+    tag: "latest"
+  service:
+    port: 3000
+  ingress:
+    enabled: true
+    host: "homepage"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "50m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+# UTILITIES
+
+huntarr:
+  enabled: true  # Missing content finder
+  image:
+    repository: ghcr.io/plexguide/huntarr
+    tag: "latest"
+  service:
+    port: 9705
+  ingress:
+    enabled: true
+    host: "huntarr"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "50m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+unpackerr:
+  enabled: true  # Archive extraction
+  image:
+    repository: golift/unpackerr
+    tag: "latest"
+  service:
+    port: 5656
+  config:
+    sonarr:
+      - url: "http://sonarr:8989"
+        apiKey: ""  # Add after deploying Sonarr
+        paths:
+          - "/data/downloads/torrents/tv"
+    radarr:
+      - url: "http://radarr:7878"
+        apiKey: ""  # Add after deploying Radarr
+        paths:
+          - "/data/downloads/torrents/movies"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "50m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+tdarr:
+  enabled: false  # Transcoding automation (resource intensive)
+  server:
+    image:
+      repository: ghcr.io/haveagitgat/tdarr
+      tag: "latest"
+    service:
+      webPort: 8265
+      serverPort: 8266
+    ingress:
+      enabled: true
+      host: "tdarr"
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"
+  node:
+    enabled: true
+    replicas: 1
+    image:
+      repository: ghcr.io/haveagitgat/tdarr_node
+      tag: "latest"
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1000m"
+      limits:
+        memory: "8Gi"
+        cpu: "4000m"
+
+guacamole:
+  enabled: false  # Remote desktop gateway
+  guacamole:
+    image:
+      repository: guacamole/guacamole
+      tag: "latest"
+    service:
+      port: 8080
+    ingress:
+      enabled: true
+      host: "guacamole"
+    database:
+      name: "guacamole"
+      user: "guacamole"
+      password: "CHANGE_ME_GUACAMOLE_PASSWORD"
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "100m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+  guacd:
+    image:
+      repository: guacamole/guacd
+      tag: "latest"
+    service:
+      port: 4822
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+
+# Crowdsec - Security & Threat Intelligence
+crowdsec:
+  enabled: false
+  image:
+    repository:  ghcr.io/crowdsecurity/crowdsec
+    tag: "latest"
+  service:
+    port: 8080
+  ingress:
+    enabled: false  # Do not expose publicly for security
+  logs:
+    enabled: true  # Mount logs from other services
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  persistence:
+    subPath: true
+
+# Overseerr - Media Request Manager (for Plex)
+# Note: Use Jellyseerr if you're using Jellyfin instead
+overseerr:
+  enabled: true
+  image:
+    repository: lscr.io/linuxserver/overseerr
+    tag: "latest"
+  service:
+    port: 5055
+  ingress:
+    enabled: true
+    host: "overseerr"
+  logLevel: "info"
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+  
+  persistence:
+    config:
+      size: "1Gi"
+    subPath: true
+
+
+# traefik 
+traefik:
+  enabled: true
+
+  # Local network access restriction
+  localNetworkOnly:
+    sourceRanges:
+      - "127.0.0.1/32"
+      - "192.168.64.0/22"
+      - "10.0.0.0/8"
+      - "172.16.0.0/12"
+  
+  # Security headers middleware
+  securityHeaders:
+    enabled: true
+    browserXssFilter: true
+    contentTypeNosniff: true
+    forceSTSHeader: true
+    stsIncludeSubdomains: true
+    stsPreload: true
+    stsSeconds: 31536000
+    customFrameOptionsValue: "SAMEORIGIN"

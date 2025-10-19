@@ -1,0 +1,3 @@
+{{- include "mediastack.deployment" (dict "service" "sabnzbd" "context" $) }}
+{{- include "mediastack.service" (dict "service" "sabnzbd" "context" $) }}
+{{- include "mediastack.ingress" (dict "service" "sabnzbd" "context" $) }}

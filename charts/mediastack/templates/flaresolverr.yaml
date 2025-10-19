@@ -1,0 +1,2 @@
+{{- include "mediastack.deployment" (dict "service" "flaresolverr" "context" $) }}
+{{- include "mediastack.service" (dict "service" "flaresolverr" "context" $) }}

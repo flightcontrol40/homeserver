@@ -1,0 +1,170 @@
+{{- if .Values.unpackerr.enabled }}
+{{- include "mediastack.configPVC" (dict "service" "unpackerr" "context" .) }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unpackerr-config
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: unpackerr
+data:
+  unpackerr.conf: |
+    [global]
+    debug = false
+    quiet = false
+    interval = "2m"
+    start_delay = "1m"
+    retry_delay = "5m"
+    max_retries = 3
+    parallel = 1
+    file_mode = "0644"
+    dir_mode = "0755"
+
+    [webserver]
+    metrics = true
+    listen_addr = "0.0.0.0:5656"
+
+    {{- if .Values.unpackerr.config.sonarr }}
+    {{- range $index, $sonarr := .Values.unpackerr.config.sonarr }}
+    [[sonarr]]
+    url = {{ $sonarr.url | quote }}
+    api_key = {{ $sonarr.apiKey | quote }}
+    paths = {{ toJson $sonarr.paths }}
+    protocols = "torrent"
+    timeout = "10s"
+    delete_delay = "5m"
+    delete_orig = false
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.unpackerr.config.radarr }}
+    {{- range $index, $radarr := .Values.unpackerr.config.radarr }}
+    [[radarr]]
+    url = {{ $radarr.url | quote }}
+    api_key = {{ $radarr.apiKey | quote }}
+    paths = {{ toJson $radarr.paths }}
+    protocols = "torrent"
+    timeout = "10s"
+    delete_delay = "5m"
+    delete_orig = false
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.unpackerr.config.lidarr }}
+    {{- range $index, $lidarr := .Values.unpackerr.config.lidarr }}
+    [[lidarr]]
+    url = {{ $lidarr.url | quote }}
+    api_key = {{ $lidarr.apiKey | quote }}
+    paths = {{ toJson $lidarr.paths }}
+    protocols = "torrent"
+    timeout = "10s"
+    delete_delay = "5m"
+    delete_orig = false
+    {{- end }}
+    {{- end }}
+
+    {{- if .Values.unpackerr.config.readarr }}
+    {{- range $index, $readarr := .Values.unpackerr.config.readarr }}
+    [[readarr]]
+    url = {{ $readarr.url | quote }}
+    api_key = {{ $readarr.apiKey | quote }}
+    paths = {{ toJson $readarr.paths }}
+    protocols = "torrent"
+    timeout = "10s"
+    delete_delay = "5m"
+    delete_orig = false
+    {{- end }}
+    {{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unpackerr
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: unpackerr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unpackerr
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: unpackerr
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: unpackerr
+    spec:
+      {{- if .Values.nodeAffinity }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - {{ .Values.nodeAffinity.hostname }}
+      {{- end }}
+      securityContext:
+        runAsUser: {{ .Values.global.puid }}
+        runAsGroup: {{ .Values.global.pgid }}
+        fsGroup: {{ .Values.global.pgid }}
+      containers:
+        - name: unpackerr
+          image: "{{ .Values.unpackerr.image.repository }}:{{ .Values.unpackerr.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.unpackerr.service.port }}
+              protocol: TCP
+          env:
+            - name: TZ
+              value: {{ .Values.global.timezone | quote }}
+            - name: UMASK
+              value: {{ .Values.global.umask | quote }}
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: downloads
+              mountPath: /data/downloads
+            - name: media
+              mountPath: /data/media
+          {{- with .Values.unpackerr.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: unpackerr-config-pvc
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: downloads-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unpackerr
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: unpackerr
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.unpackerr.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: unpackerr
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

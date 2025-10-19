@@ -1,0 +1,222 @@
+{{- if .Values.tdarr.enabled }}
+{{- include "mediastack.configPVC" (dict "service" "tdarr" "context" .) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tdarr-server
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: tdarr-server
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tdarr-server
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tdarr-server
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: tdarr-server
+    spec:
+      {{- if .Values.nodeAffinity }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - {{ .Values.nodeAffinity.hostname }}
+      {{- end }}
+      containers:
+        - name: tdarr-server
+          image: "{{ .Values.tdarr.server.image.repository }}:{{ .Values.tdarr.server.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.tdarr.server.service.webPort }}
+              protocol: TCP
+            - name: server
+              containerPort: {{ .Values.tdarr.server.service.serverPort }}
+              protocol: TCP
+          env:
+            {{- include "mediastack.commonEnv" . | nindent 12 }}
+            - name: serverPort
+              value: {{ .Values.tdarr.server.service.serverPort | quote }}
+            - name: webUIPort
+              value: {{ .Values.tdarr.server.service.webPort | quote }}
+            - name: internalNode
+              value: "true"
+            - name: nodeID
+              value: "Tdarr_Server"
+          volumeMounts:
+            - name: config
+              mountPath: /app/configs
+              subPath: tdarr/configs
+            - name: config
+              mountPath: /app/logs
+              subPath: tdarr/logs
+            - name: temp
+              mountPath: /temp
+              subPath: tdarr-temp
+            - name: media
+              mountPath: /data/media
+          {{- with .Values.tdarr.server.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: tdarr-config-pvc
+        - name: temp
+          persistentVolumeClaim:
+            claimName: tdarr-config-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tdarr-server
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: tdarr-server
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.tdarr.server.service.webPort }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: {{ .Values.tdarr.server.service.serverPort }}
+      targetPort: server
+      protocol: TCP
+      name: server
+  selector:
+    app.kubernetes.io/name: tdarr-server
+    app.kubernetes.io/instance: {{ .Release.Name }}
+---
+{{- if .Values.tdarr.server.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tdarr
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: tdarr-server
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: {{ .Values.global.traefik.entrypoint }}
+    {{- if .Values.global.traefik.tls.enabled }}
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    {{- end }}
+    {{- $middlewares := include "mediastack.traefikMiddlewares" (dict "global" .Values.global "service" .Values.tdarr.server) }}
+    {{- if $middlewares }}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ $middlewares }}
+    {{- end }}
+spec:
+  ingressClassName: traefik
+  {{- if .Values.global.traefik.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.tdarr.server.ingress.host }}.{{ .Values.global.domain }}
+      secretName: tdarr-tls
+  {{- end }}
+  rules:
+    - host: {{ .Values.tdarr.server.ingress.host }}.{{ .Values.global.domain }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tdarr-server
+                port:
+                  number: {{ .Values.tdarr.server.service.webPort }}
+{{- end }}
+{{- if .Values.tdarr.node.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tdarr-node
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: tdarr-node
+spec:
+  replicas: {{ .Values.tdarr.node.replicas }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tdarr-node
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tdarr-node
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: tdarr-node
+    spec:
+      {{- if .Values.nodeAffinity }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - {{ .Values.nodeAffinity.hostname }}
+      {{- end }}
+      containers:
+        - name: tdarr-node
+          image: "{{ .Values.tdarr.node.image.repository }}:{{ .Values.tdarr.node.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          env:
+            {{- include "mediastack.commonEnv" . | nindent 12 }}
+            - name: nodeID
+              value: "Tdarr_Node_1"
+            - name: serverIP
+              value: "tdarr-server"
+            - name: serverPort
+              value: {{ .Values.tdarr.server.service.serverPort | quote }}
+          volumeMounts:
+            - name: config
+              mountPath: /app/configs
+              subPath: tdarr/configs
+            - name: config
+              mountPath: /app/logs
+              subPath: tdarr/logs
+            - name: temp
+              mountPath: /temp
+              subPath: tdarr-temp
+            - name: media
+              mountPath: /data/media
+          {{- with .Values.tdarr.node.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: tdarr-config-pvc
+        - name: temp
+          persistentVolumeClaim:
+            claimName: tdarr-config-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+{{- end }}
+{{- end }}

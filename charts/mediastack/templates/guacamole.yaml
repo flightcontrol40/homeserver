@@ -1,0 +1,181 @@
+{{- if .Values.guacamole.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guacd
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: guacd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: guacd
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: guacd
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: guacd
+    spec:
+      containers:
+        - name: guacd
+          image: "{{ .Values.guacamole.guacd.image.repository }}:{{ .Values.guacamole.guacd.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: guacd
+              containerPort: {{ .Values.guacamole.guacd.service.port }}
+              protocol: TCP
+          {{- with .Values.guacamole.guacd.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guacd
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: guacd
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.guacamole.guacd.service.port }}
+      targetPort: guacd
+      protocol: TCP
+      name: guacd
+  selector:
+    app.kubernetes.io/name: guacd
+    app.kubernetes.io/instance: {{ .Release.Name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guacamole
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: guacamole
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: guacamole
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: guacamole
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: guacamole
+    spec:
+      containers:
+        - name: guacamole
+          image: "{{ .Values.guacamole.guacamole.image.repository }}:{{ .Values.guacamole.guacamole.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.guacamole.guacamole.service.port }}
+              protocol: TCP
+          env:
+            - name: TZ
+              value: {{ .Values.global.timezone | quote }}
+            - name: WEBAPP_CONTEXT
+              value: "ROOT"
+            - name: GUACD_HOSTNAME
+              value: "guacd"
+            - name: GUACD_PORT
+              value: {{ .Values.guacamole.guacd.service.port | quote }}
+            - name: POSTGRESQL_HOSTNAME
+              value: "postgresql"
+            - name: POSTGRESQL_PORT
+              value: {{ .Values.postgresql.service.port | quote }}
+            - name: POSTGRESQL_DATABASE
+              value: {{ .Values.guacamole.guacamole.database.name | quote }}
+            - name: POSTGRESQL_USER
+              value: {{ .Values.guacamole.guacamole.database.user | quote }}
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: guacamole-secret
+                  key: database-password
+          {{- with .Values.guacamole.guacamole.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guacamole
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: guacamole
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.guacamole.guacamole.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: guacamole
+    app.kubernetes.io/instance: {{ .Release.Name }}
+---
+{{- if .Values.guacamole.guacamole.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: guacamole
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: guacamole
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: {{ .Values.global.traefik.entrypoint }}
+    {{- if .Values.global.traefik.tls.enabled }}
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    {{- end }}
+    {{- $middlewares := include "mediastack.traefikMiddlewares" (dict "global" .Values.global "service" .Values.guacamole.guacamole) }}
+    {{- if $middlewares }}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ $middlewares }}
+    {{- end }}
+spec:
+  ingressClassName: traefik
+  {{- if .Values.global.traefik.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.guacamole.guacamole.ingress.host }}.{{ .Values.global.domain }}
+      secretName: guacamole-tls
+  {{- end }}
+  rules:
+    - host: {{ .Values.guacamole.guacamole.ingress.host }}.{{ .Values.global.domain }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: guacamole
+                port:
+                  number: {{ .Values.guacamole.guacamole.service.port }}
+{{- end }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: guacamole-secret
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: guacamole
+type: Opaque
+stringData:
+  database-password: {{ .Values.guacamole.guacamole.database.password | quote }}
+{{- end }}

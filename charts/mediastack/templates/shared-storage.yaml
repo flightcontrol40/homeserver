@@ -1,0 +1,44 @@
+{{/*
+Shared storage PVCs for media and downloads
+These are shared across multiple pods and persist when pods are deleted
+*/}}
+
+{{- if .Values.storage.media.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-pvc
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: storage
+    storage-type: media
+spec:
+  accessModes:
+    - {{ .Values.storage.media.accessMode }}
+  storageClassName: {{ .Values.storage.media.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.media.size }}
+{{- end }}
+
+{{- if .Values.storage.downloads.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: downloads-pvc
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "mediastack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: storage
+    storage-type: downloads
+spec:
+  accessModes:
+    - {{ .Values.storage.downloads.accessMode }}
+  storageClassName: {{ .Values.storage.downloads.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.downloads.size }}
+{{- end }}
