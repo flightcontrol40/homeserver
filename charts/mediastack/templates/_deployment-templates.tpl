@@ -145,8 +145,8 @@ Generic ingress template
 {{- $values := index $.Values $serviceName -}}
 {{- if and $values.enabled $values.ingress.enabled }}
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
   name: {{ $serviceName }}
   namespace: {{ $.Values.global.namespace }}
@@ -163,23 +163,20 @@ metadata:
     traefik.ingress.kubernetes.io/router.middlewares: {{ $middlewares }}
     {{- end }}
 spec:
-  ingressClassName: traefik
-  {{- if $.Values.global.traefik.tls.enabled }}
-  tls:
-    - hosts:
-        - {{ $values.ingress.host }}.{{ $.Values.global.domain }}
-      secretName: {{ $serviceName }}-tls
-  {{- end }}
+
+  parentRefs:
+    - name: traefik-gateway
+  hostnames:
+    - "{{ $values.ingress.host }}.{{ $.Values.global.domain }}"
+
   rules:
-    - host: {{ $values.ingress.host }}.{{ $.Values.global.domain }}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ $serviceName }}
-                port:
-                  number: {{ $values.service.port }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ $serviceName }}
+          port: {{ $values.service.port }}
+  
 {{- end }}
 {{- end }}

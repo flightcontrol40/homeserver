@@ -1,3 +1,4 @@
+---
 # Source: mediastack-k8s/templates/postgresql.yaml
 apiVersion: v1
 kind: Secret
@@ -30,7 +31,29 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: qbittorrent-vpn
 data:
-  wg0.conf: |
+  us-sea-wg-001.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = bZQF7VRDRK/JUJ8L6EFzF/zRw2tsqMRk6FesGtTgsC0=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 138.199.43.91:51820
+  us-sea-wg-002.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = Xt80FGN9eLy1vX3F29huj6oW2MnQt7ne3DMBpo525Qw=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 138.199.43.78:51820
+  us-sea-wg-003.conf: |-
     [Interface]
     # Device: Spicy Spider
     PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
@@ -41,6 +64,94 @@ data:
     PublicKey = 4ke8ZSsroiI6Sp23OBbMAU6yQmdF3xU2N8CyzQXE/Qw=
     AllowedIPs = 0.0.0.0/0,::0/0
     Endpoint = 138.199.43.65:51820
+  us-sea-wg-401.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = wRvkGNE3N2UklxKajU06gbBJ3Bg7KmhZsU7a5HIFBw8=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.80.2:51820
+  us-sea-wg-402.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = NBnpCxDrc0tdX91KUm5cEmQv7BSMOZqd7dS/d7piQl0=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.80.127:51820
+  us-sea-wg-403.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = cJ8317JqMtNDvxvd/8z29lWurK/3sb5nFZuOY5mw3ys=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.81.2:51820
+  us-sea-wg-404.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = G6+A375GVmuFCAtvwgx3SWCWhrMvdQ+cboXQ8zp2ang=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.81.127:51820
+  us-sea-wg-405.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = X+efE4ntYuAEHBHU32SBMq/U0lAFEKeX5/nl3CKtrVM=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.82.2:51820
+  us-sea-wg-406.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = kT695K8pTGd+I6Q4a4URU2AdXN2VAtHyi7kNSRjUEiw=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.82.127:51820
+  us-sea-wg-407.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = HrhtkMqLmKtpAHiUIw7uLHwt48mDlhyLOt4+1kpNj3Y=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.83.2:51820
+  us-sea-wg-408.conf: |-
+    [Interface]
+    # Device: Spicy Spider
+    PrivateKey = QH2uk2/pEAHJ2Gq2RA3OCpN6zH99F5VzBgzhzOICHGY=
+    Address = 10.71.237.120/32,fc00:bbbb:bbbb:bb01::8:ed77/128
+    DNS = 10.64.0.1
+
+    [Peer]
+    PublicKey = tfhYXF12+7tB6bEOhqZ7eMODDv08fDMnQSBTmlau9VI=
+    AllowedIPs = 0.0.0.0/0,::0/0
+    Endpoint = 23.234.83.127:51820
 ---
 # Source: mediastack-k8s/templates/unpackerr.yaml
 apiVersion: v1
@@ -105,6 +216,29 @@ spec:
   resources:
     requests:
       storage: "2Gi"
+---
+# Source: mediastack-k8s/templates/aria2.yaml
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: aria-config-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: aria
+    storage-type: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
 ---
 # Source: mediastack-k8s/templates/bazarr.yaml
 apiVersion: v1
@@ -348,6 +482,29 @@ spec:
     requests:
       storage: 5Gi
 ---
+# Source: mediastack-k8s/templates/rdt-client.yaml
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: realdebrid-config-pvc
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: realdebrid
+    storage-type: config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
 # Source: mediastack-k8s/templates/shared-storage.yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -364,7 +521,7 @@ metadata:
     storage-type: media
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   storageClassName: local-path
   resources:
     requests:
@@ -386,7 +543,7 @@ metadata:
     storage-type: downloads
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   storageClassName: local-path
   resources:
     requests:
@@ -456,6 +613,30 @@ spec:
       name: http
   selector:
     app.kubernetes.io/name: qbittorrent-vpn
+    app.kubernetes.io/instance: mediastack
+---
+# Source: mediastack-k8s/templates/aria2.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: aria
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: aria
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6800
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: aria
     app.kubernetes.io/instance: mediastack
 ---
 # Source: mediastack-k8s/templates/bazarr.yaml
@@ -702,6 +883,30 @@ spec:
     app.kubernetes.io/name: radarr
     app.kubernetes.io/instance: mediastack
 ---
+# Source: mediastack-k8s/templates/rdt-client.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: realdebrid
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: realdebrid
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6500
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: realdebrid
+    app.kubernetes.io/instance: mediastack
+---
 # Source: mediastack-k8s/templates/sonarr.yaml
 apiVersion: v1
 kind: Service
@@ -833,14 +1038,6 @@ spec:
             #
             
             # Gluetun general settings
-            - name: BLOCK_MALICIOUS
-              value: "off"
-            - name: BLOCK_SURVEILLANCE
-              value: "off"
-            - name: DNS_ADDRESS
-              value: "1.1.1.1"
-            - name: DOT
-              value: "off"
             - name: FIREWALL
               value: "on"
             - name: FIREWALL_DEBUG
@@ -967,6 +1164,92 @@ spec:
         - configMap:
             name: qbittorrent-glutun-wireguard-config
           name: wireguard-config
+---
+# Source: mediastack-k8s/templates/aria2.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aria
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: aria
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: aria
+      app.kubernetes.io/instance: mediastack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: aria
+        app.kubernetes.io/instance: mediastack
+        app.kubernetes.io/component: aria
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - supersussywebsite
+      containers:
+        - name: aria
+          image: "p3terx/aria2-pro:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 6800
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: America/Los_Angeles
+            - name: UMASK_SET
+              value: "002"
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "America/Los_Angeles"
+            - name: UMASK
+              value: "002"
+            - name: RPC_PORT
+              value: "6800"
+            - name: RPC_SECRET
+              value: X1d6TnpVwd6L25byryW8CvgV8c
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: downloads
+              mountPath: /downloads
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: aria-config-pvc
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: downloads-pvc
 ---
 # Source: mediastack-k8s/templates/bazarr.yaml
 apiVersion: apps/v1
@@ -1690,6 +1973,86 @@ spec:
           persistentVolumeClaim:
             claimName: downloads-pvc
 ---
+# Source: mediastack-k8s/templates/rdt-client.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: realdebrid
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: realdebrid
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: realdebrid
+      app.kubernetes.io/instance: mediastack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: realdebrid
+        app.kubernetes.io/instance: mediastack
+        app.kubernetes.io/component: realdebrid
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - supersussywebsite
+      containers:
+        - name: realdebrid
+          image: "ghcr.io/rogerfar/rdtclient:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 6500
+              protocol: TCP
+            - name: aria
+              containerPort: 6800
+              protocol: TCP
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "America/Los_Angeles"
+            - name: UMASK
+              value: "002"
+          volumeMounts:
+            - name: config
+              mountPath: /data/db
+            - name: downloads
+              mountPath: /downloads
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: realdebrid-config-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: media-pvc
+        - name: downloads
+          persistentVolumeClaim:
+            claimName: downloads-pvc
+---
 # Source: mediastack-k8s/templates/sonarr.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -1940,6 +2303,35 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: postgresql-config-pvc
+---
+# Source: mediastack-k8s/templates/aria2.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aria
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: aria
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: aria.supersussywebsite.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: aria
+                port:
+                  number: 6800
 ---
 # Source: mediastack-k8s/templates/bazarr.yaml
 apiVersion: networking.k8s.io/v1
@@ -2201,6 +2593,35 @@ spec:
                 name: radarr
                 port:
                   number: 7878
+---
+# Source: mediastack-k8s/templates/rdt-client.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: realdebrid
+  namespace: mediastack
+  labels:
+    helm.sh/chart: mediastack-k8s-1.0.0
+    app.kubernetes.io/name: mediastack-k8s
+    app.kubernetes.io/instance: mediastack
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: realdebrid
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: realdebrid.supersussywebsite.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: realdebrid
+                port:
+                  number: 6500
 ---
 # Source: mediastack-k8s/templates/sonarr.yaml
 apiVersion: networking.k8s.io/v1

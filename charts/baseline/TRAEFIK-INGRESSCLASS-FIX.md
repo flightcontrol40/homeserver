@@ -42,3 +42,30 @@ curl -I http://192.168.70.125 -H "Host: homarr.supersussywebsite.com"
 - The custom IngressClass template is only created when `global.traefik.enabled: true`
 - The IngressClass is set to NOT be the default class (`is-default-class: "false"`)
 - The `baseline-traefik` IngressClass is no longer created since we disabled it in values.yaml
+
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+  creationTimestamp: "2025-10-19T15:58:50Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/instance: baseline
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: traefik
+    helm.sh/chart: traefik-10.3.6
+  name: baseline-traefik-dashboard
+  namespace: traefik
+  resourceVersion: "220856"
+  uid: 1d9adee1-3750-4a09-9f0e-67799ab1f9ee
+spec:
+  entryPoints:
+  - traefik
+  routes:
+  - kind: Rule
+    match: PathPrefix(`/dashboard`) || PathPrefix(`/api`)
+    services:
+    - kind: TraefikService
+      name: api@internal

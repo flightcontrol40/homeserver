@@ -68,13 +68,13 @@ spec:
               protocol: TCP
           env:
             - name: PUID
-              value: {{ .Values.global.puid }}
+              value: {{ .Values.global.puid | quote}}
             - name: PGID
-              value: {{ .Values.global.pgid }}
+              value: {{ .Values.global.pgid | quote }}
             - name: TZ
               value: {{ .Values.global.timezone }}
             - name: UMASK_SET
-              value: {{ .Values.global.umask }}
+              value: {{ .Values.global.umask | quote }}
             {{- include "mediastack.commonEnv" $ | nindent 12 }}
             {{- with $values.env }}
             {{- toYaml . | nindent 12 }}

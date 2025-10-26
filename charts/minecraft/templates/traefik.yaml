@@ -1,0 +1,15 @@
+# apiVersion: gateway.networking.k8s.io/v1alpha2
+# kind: TCPRoute
+# metadata:
+#   name: "{{ template "minecraft.fullname" . }}-traefik"
+#   namespace: {{ .Release.Namespace }}
+# spec:
+#   parentRefs:
+#     - name: traefik-gateway # Name of the Gateway that Traefik creates when you enable the Gateway API provider
+#       sectionName: minecraft  # Must match the listener name defined in the Gateway
+#       kind: Gateway
+#   rules:
+#     - backendRefs:
+#         - name: {{ template "minecraft.fullname" . }}
+#           port: {{ .Values.minecraftServer.servicePort | default 25565 }}
+#           namespace: {{ .Release.Namespace }}
